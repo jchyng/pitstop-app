@@ -195,6 +195,295 @@ class _ItemSpecsProviderElement
   int get vehicleId => (origin as ItemSpecsProvider).vehicleId;
 }
 
+String _$monthlyExpensesHash() => r'1c1e9bb947dc015eff1729138c41891a28e8c7e1';
+
+/// See also [monthlyExpenses].
+@ProviderFor(monthlyExpenses)
+const monthlyExpensesProvider = MonthlyExpensesFamily();
+
+/// See also [monthlyExpenses].
+class MonthlyExpensesFamily extends Family<AsyncValue<List<Expense>>> {
+  /// See also [monthlyExpenses].
+  const MonthlyExpensesFamily();
+
+  /// See also [monthlyExpenses].
+  MonthlyExpensesProvider call(int vehicleId, int year, int month) {
+    return MonthlyExpensesProvider(vehicleId, year, month);
+  }
+
+  @override
+  MonthlyExpensesProvider getProviderOverride(
+    covariant MonthlyExpensesProvider provider,
+  ) {
+    return call(provider.vehicleId, provider.year, provider.month);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'monthlyExpensesProvider';
+}
+
+/// See also [monthlyExpenses].
+class MonthlyExpensesProvider extends AutoDisposeFutureProvider<List<Expense>> {
+  /// See also [monthlyExpenses].
+  MonthlyExpensesProvider(int vehicleId, int year, int month)
+    : this._internal(
+        (ref) =>
+            monthlyExpenses(ref as MonthlyExpensesRef, vehicleId, year, month),
+        from: monthlyExpensesProvider,
+        name: r'monthlyExpensesProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$monthlyExpensesHash,
+        dependencies: MonthlyExpensesFamily._dependencies,
+        allTransitiveDependencies:
+            MonthlyExpensesFamily._allTransitiveDependencies,
+        vehicleId: vehicleId,
+        year: year,
+        month: month,
+      );
+
+  MonthlyExpensesProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.vehicleId,
+    required this.year,
+    required this.month,
+  }) : super.internal();
+
+  final int vehicleId;
+  final int year;
+  final int month;
+
+  @override
+  Override overrideWith(
+    FutureOr<List<Expense>> Function(MonthlyExpensesRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: MonthlyExpensesProvider._internal(
+        (ref) => create(ref as MonthlyExpensesRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        vehicleId: vehicleId,
+        year: year,
+        month: month,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<List<Expense>> createElement() {
+    return _MonthlyExpensesProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MonthlyExpensesProvider &&
+        other.vehicleId == vehicleId &&
+        other.year == year &&
+        other.month == month;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, vehicleId.hashCode);
+    hash = _SystemHash.combine(hash, year.hashCode);
+    hash = _SystemHash.combine(hash, month.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin MonthlyExpensesRef on AutoDisposeFutureProviderRef<List<Expense>> {
+  /// The parameter `vehicleId` of this provider.
+  int get vehicleId;
+
+  /// The parameter `year` of this provider.
+  int get year;
+
+  /// The parameter `month` of this provider.
+  int get month;
+}
+
+class _MonthlyExpensesProviderElement
+    extends AutoDisposeFutureProviderElement<List<Expense>>
+    with MonthlyExpensesRef {
+  _MonthlyExpensesProviderElement(super.provider);
+
+  @override
+  int get vehicleId => (origin as MonthlyExpensesProvider).vehicleId;
+  @override
+  int get year => (origin as MonthlyExpensesProvider).year;
+  @override
+  int get month => (origin as MonthlyExpensesProvider).month;
+}
+
+String _$monthlySummaryHash() => r'7fe433ffbf0ff524ba0a809f9c873f963ee113a6';
+
+/// See also [monthlySummary].
+@ProviderFor(monthlySummary)
+const monthlySummaryProvider = MonthlySummaryFamily();
+
+/// See also [monthlySummary].
+class MonthlySummaryFamily extends Family<AsyncValue<ExpenseSummaryData>> {
+  /// See also [monthlySummary].
+  const MonthlySummaryFamily();
+
+  /// See also [monthlySummary].
+  MonthlySummaryProvider call(int vehicleId, int year, int month) {
+    return MonthlySummaryProvider(vehicleId, year, month);
+  }
+
+  @override
+  MonthlySummaryProvider getProviderOverride(
+    covariant MonthlySummaryProvider provider,
+  ) {
+    return call(provider.vehicleId, provider.year, provider.month);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'monthlySummaryProvider';
+}
+
+/// See also [monthlySummary].
+class MonthlySummaryProvider
+    extends AutoDisposeFutureProvider<ExpenseSummaryData> {
+  /// See also [monthlySummary].
+  MonthlySummaryProvider(int vehicleId, int year, int month)
+    : this._internal(
+        (ref) =>
+            monthlySummary(ref as MonthlySummaryRef, vehicleId, year, month),
+        from: monthlySummaryProvider,
+        name: r'monthlySummaryProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$monthlySummaryHash,
+        dependencies: MonthlySummaryFamily._dependencies,
+        allTransitiveDependencies:
+            MonthlySummaryFamily._allTransitiveDependencies,
+        vehicleId: vehicleId,
+        year: year,
+        month: month,
+      );
+
+  MonthlySummaryProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.vehicleId,
+    required this.year,
+    required this.month,
+  }) : super.internal();
+
+  final int vehicleId;
+  final int year;
+  final int month;
+
+  @override
+  Override overrideWith(
+    FutureOr<ExpenseSummaryData> Function(MonthlySummaryRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: MonthlySummaryProvider._internal(
+        (ref) => create(ref as MonthlySummaryRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        vehicleId: vehicleId,
+        year: year,
+        month: month,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<ExpenseSummaryData> createElement() {
+    return _MonthlySummaryProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MonthlySummaryProvider &&
+        other.vehicleId == vehicleId &&
+        other.year == year &&
+        other.month == month;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, vehicleId.hashCode);
+    hash = _SystemHash.combine(hash, year.hashCode);
+    hash = _SystemHash.combine(hash, month.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin MonthlySummaryRef on AutoDisposeFutureProviderRef<ExpenseSummaryData> {
+  /// The parameter `vehicleId` of this provider.
+  int get vehicleId;
+
+  /// The parameter `year` of this provider.
+  int get year;
+
+  /// The parameter `month` of this provider.
+  int get month;
+}
+
+class _MonthlySummaryProviderElement
+    extends AutoDisposeFutureProviderElement<ExpenseSummaryData>
+    with MonthlySummaryRef {
+  _MonthlySummaryProviderElement(super.provider);
+
+  @override
+  int get vehicleId => (origin as MonthlySummaryProvider).vehicleId;
+  @override
+  int get year => (origin as MonthlySummaryProvider).year;
+  @override
+  int get month => (origin as MonthlySummaryProvider).month;
+}
+
 String _$allMaintenanceRecordsHash() =>
     r'8ef74e45ea61078ae65f0215f3dcd8f15d6aa1cd';
 

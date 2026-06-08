@@ -31,7 +31,52 @@ Future<List<ItemSpec>> itemSpecs(Ref ref, int vehicleId) async {
       .get();
 }
 
+// ─── 가계부 타입 ───────────────────────────────────────────────
+
 typedef RecordWithSpec = ({MaintenanceRecord record, ItemSpec? spec});
+
+typedef ExpenseSummaryData = ({
+  int total,
+  int prevTotal,
+  Map<String, int> byCategory,
+  int? monthlyKm,
+});
+
+@riverpod
+Future<List<Expense>> monthlyExpenses(
+    Ref ref, int vehicleId, int year, int month) async {
+  final db = ref.watch(appDatabaseProvider);
+  return db.getMonthExpenses(vehicleId, year, month);
+}
+
+@riverpod
+Future<ExpenseSummaryData> monthlySummary(
+    Ref ref, int vehicleId, int year, int month) async {
+  final db = ref.watch(appDatabaseProvider);
+
+  final current = await db.getMonthExpenses(vehicleId, year, month);
+
+  final prevMonth = month == 1 ? 12 : month - 1;
+  final prevYear = month == 1 ? year - 1 : year;
+  final prev = await db.getMonthExpenses(vehicleId, prevYear, prevMonth);
+
+  final total = current.fold(0, (s, e) => s + e.amount);
+  final prevTotal = prev.fold(0, (s, e) => s + e.amount);
+
+  final byCategory = <String, int>{};
+  for (final e in current) {
+    byCategory[e.category] = (byCategory[e.category] ?? 0) + e.amount;
+  }
+
+  final monthlyKm = await db.getMonthKmDelta(vehicleId, year, month);
+
+  return (
+    total: total,
+    prevTotal: prevTotal,
+    byCategory: byCategory,
+    monthlyKm: monthlyKm,
+  );
+}
 
 @riverpod
 Future<List<RecordWithSpec>> allMaintenanceRecords(

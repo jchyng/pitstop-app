@@ -77,6 +77,62 @@ class AppDatabase extends _$AppDatabase {
 
   // ─── 조회 ─────────────────────────────────────────────────
 
+  // ─── 가계부 조회 / 집계 ───────────────────────────────────
+
+  Future<List<Expense>> getMonthExpenses(
+      int vehicleId, int year, int month) async {
+    final start = DateTime(year, month);
+    final end = DateTime(year, month + 1); // Dart: month=13 → 다음해 1월 자동 처리
+    return (select(expenses)
+          ..where((e) =>
+              e.vehicleId.equals(vehicleId) &
+              e.date.isBiggerOrEqualValue(start) &
+              e.date.isSmallerThanValue(end))
+          ..orderBy([(e) => OrderingTerm.desc(e.date)]))
+        .get();
+  }
+
+  /// 해당 월에 기록된 정비이력 odometer 의 max - min. 기록 2개 미만이면 null.
+  Future<int?> getMonthKmDelta(
+      int vehicleId, int year, int month) async {
+    final start = DateTime(year, month);
+    final end = DateTime(year, month + 1);
+    final rows = await (select(maintenanceRecords)
+          ..where((r) =>
+              r.vehicleId.equals(vehicleId) &
+              r.date.isBiggerOrEqualValue(start) &
+              r.date.isSmallerThanValue(end)))
+        .get();
+    if (rows.length < 2) return null;
+    final odos = rows.map((r) => r.odometer);
+    return odos.reduce((a, b) => a > b ? a : b) -
+        odos.reduce((a, b) => a < b ? a : b);
+  }
+
+  Future<void> addExpenseManually({
+    required int vehicleId,
+    required String category,
+    required String title,
+    required DateTime date,
+    required int amount,
+    String? place,
+  }) async {
+    await into(expenses).insert(
+      ExpensesCompanion.insert(
+        vehicleId: vehicleId,
+        category: category,
+        title: title,
+        date: date,
+        amount: amount,
+        place: Value(place),
+      ),
+    );
+  }
+
+  Future<void> deleteExpense(int expenseId) async {
+    await (delete(expenses)..where((e) => e.id.equals(expenseId))).go();
+  }
+
   /// 차량의 전체 이력 + 연결된 소모품 스펙을 날짜 내림차순으로 반환.
   Future<List<({MaintenanceRecord record, ItemSpec? spec})>>
       getAllRecordsWithSpec(int vehicleId) async {
