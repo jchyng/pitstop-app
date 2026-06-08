@@ -5,6 +5,7 @@ import '../../core/theme/tokens.dart';
 import '../../core/db/database.dart';
 import '../../domain/logic/remaining_life.dart';
 import '../../providers.dart';
+import '../maintenance/item_detail_screen.dart';
 
 class GarageScreen extends ConsumerWidget {
   const GarageScreen({super.key});
@@ -245,7 +246,17 @@ class _ItemStatusCard extends ConsumerWidget {
             children: [
               for (var i = 0; i < entries.length; i++) ...[
                 _ItemStatusRow(
-                    spec: entries[i].spec, result: entries[i].result),
+                  spec: entries[i].spec,
+                  result: entries[i].result,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ItemDetailScreen(
+                        specId: entries[i].spec.id,
+                        vehicleId: vehicleId,
+                      ),
+                    ),
+                  ),
+                ),
                 if (i < entries.length - 1)
                   const Divider(height: 1, color: AppColors.hairline),
               ],
@@ -262,7 +273,8 @@ class _ItemStatusCard extends ConsumerWidget {
 class _ItemStatusRow extends StatelessWidget {
   final ItemSpec spec;
   final RemainingLifeResult result;
-  const _ItemStatusRow({required this.spec, required this.result});
+  final VoidCallback? onTap;
+  const _ItemStatusRow({required this.spec, required this.result, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -272,7 +284,10 @@ class _ItemStatusRow extends StatelessWidget {
     final showBadge = result.status == ItemStatus.warn ||
         result.status == ItemStatus.overdue;
 
-    return Padding(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.card,
+      child: Padding(
       padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.cardPaddingH, vertical: 18),
       child: Column(
@@ -333,6 +348,7 @@ class _ItemStatusRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

@@ -74,4 +74,166 @@ class AppDatabase extends _$AppDatabase {
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'pitstop_db');
   }
+
+  // ─── 조회 ─────────────────────────────────────────────────
+
+  Future<ItemSpec?> getItemSpec(int specId) =>
+      (select(itemSpecs)..where((s) => s.id.equals(specId))).getSingleOrNull();
+
+  Future<List<MaintenanceRecord>> getMaintenanceRecordsForSpec(int specId) =>
+      (select(maintenanceRecords)
+            ..where((r) => r.itemSpecId.equals(specId))
+            ..orderBy([(r) => OrderingTerm.desc(r.date)]))
+          .get();
+
+  // ─── last_replaced 캐시 갱신 ──────────────────────────────
+
+  Future<void> _refreshLastReplaced(int specId) async {
+    final latest = await (select(maintenanceRecords)
+          ..where((r) =>
+              r.itemSpecId.equals(specId) & r.type.equals('replace'))
+          ..orderBy([(r) => OrderingTerm.desc(r.date)])
+          ..limit(1))
+        .getSingleOrNull();
+
+    await (update(itemSpecs)..where((s) => s.id.equals(specId))).write(
+      ItemSpecsCompanion(
+        lastReplacedOdometer: Value(latest?.odometer),
+        lastReplacedDate: Value(latest?.date),
+      ),
+    );
+  }
+
+  // ─── 이력 CRUD ────────────────────────────────────────────
+
+  Future<void> addRecord({
+    required int vehicleId,
+    required int specId,
+    required String specName,
+    required String type,
+    required DateTime date,
+    required int odometer,
+    int? amount,
+    String? place,
+    String? memo,
+  }) async {
+    await transaction(() async {
+      final recId = await into(maintenanceRecords).insert(
+        MaintenanceRecordsCompanion.insert(
+          vehicleId: vehicleId,
+          itemSpecId: Value(specId),
+          type: type,
+          date: date,
+          odometer: odometer,
+          place: Value(place),
+          memo: Value(memo),
+        ),
+      );
+
+      if (amount != null && amount > 0) {
+        final expId = await into(expenses).insert(
+          ExpensesCompanion.insert(
+            vehicleId: vehicleId,
+            category: 'maintenance',
+            title: specName,
+            date: date,
+            amount: amount,
+            place: Value(place),
+          ),
+        );
+        await (update(maintenanceRecords)..where((r) => r.id.equals(recId)))
+            .write(MaintenanceRecordsCompanion(expenseId: Value(expId)));
+      }
+
+      if (type == 'replace') await _refreshLastReplaced(specId);
+
+      final vehicle =
+          await (select(vehicles)..where((v) => v.id.equals(vehicleId)))
+              .getSingle();
+      if (odometer > vehicle.currentOdometer) {
+        await (update(vehicles)..where((v) => v.id.equals(vehicleId)))
+            .write(VehiclesCompanion(currentOdometer: Value(odometer)));
+      }
+    });
+  }
+
+  Future<void> updateRecord({
+    required MaintenanceRecord existing,
+    required String specName,
+    required String type,
+    required DateTime date,
+    required int odometer,
+    int? amount,
+    String? place,
+    String? memo,
+  }) async {
+    await transaction(() async {
+      await (update(maintenanceRecords)
+            ..where((r) => r.id.equals(existing.id)))
+          .write(MaintenanceRecordsCompanion(
+            type: Value(type),
+            date: Value(date),
+            odometer: Value(odometer),
+            place: Value(place),
+            memo: Value(memo),
+          ));
+
+      final hasAmount = amount != null && amount > 0;
+      if (hasAmount && existing.expenseId == null) {
+        final expId = await into(expenses).insert(
+          ExpensesCompanion.insert(
+            vehicleId: existing.vehicleId,
+            category: 'maintenance',
+            title: specName,
+            date: date,
+            amount: amount,
+            place: Value(place),
+          ),
+        );
+        await (update(maintenanceRecords)
+              ..where((r) => r.id.equals(existing.id)))
+            .write(MaintenanceRecordsCompanion(expenseId: Value(expId)));
+      } else if (hasAmount && existing.expenseId != null) {
+        await (update(expenses)
+              ..where((e) => e.id.equals(existing.expenseId!)))
+            .write(ExpensesCompanion(
+              title: Value(specName),
+              date: Value(date),
+              amount: Value(amount),
+              place: Value(place),
+            ));
+      } else if (!hasAmount && existing.expenseId != null) {
+        await (delete(expenses)
+              ..where((e) => e.id.equals(existing.expenseId!)))
+            .go();
+        await (update(maintenanceRecords)
+              ..where((r) => r.id.equals(existing.id)))
+            .write(const MaintenanceRecordsCompanion(expenseId: Value(null)));
+      }
+
+      if (type == 'replace' || existing.type == 'replace') {
+        await _refreshLastReplaced(existing.itemSpecId!);
+      }
+
+      final vehicle =
+          await (select(vehicles)..where((v) => v.id.equals(existing.vehicleId)))
+              .getSingle();
+      if (odometer > vehicle.currentOdometer) {
+        await (update(vehicles)..where((v) => v.id.equals(existing.vehicleId)))
+            .write(VehiclesCompanion(currentOdometer: Value(odometer)));
+      }
+    });
+  }
+
+  Future<void> deleteRecord(MaintenanceRecord rec) async {
+    await transaction(() async {
+      if (rec.expenseId != null) {
+        await (delete(expenses)..where((e) => e.id.equals(rec.expenseId!)))
+            .go();
+      }
+      await (delete(maintenanceRecords)..where((r) => r.id.equals(rec.id)))
+          .go();
+      if (rec.itemSpecId != null) await _refreshLastReplaced(rec.itemSpecId!);
+    });
+  }
 }

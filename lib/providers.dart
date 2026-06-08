@@ -31,6 +31,18 @@ Future<List<ItemSpec>> itemSpecs(Ref ref, int vehicleId) async {
       .get();
 }
 
+@riverpod
+Future<ItemSpec?> itemSpec(Ref ref, int specId) async {
+  final db = ref.watch(appDatabaseProvider);
+  return db.getItemSpec(specId);
+}
+
+@riverpod
+Future<List<MaintenanceRecord>> maintenanceRecords(Ref ref, int specId) async {
+  final db = ref.watch(appDatabaseProvider);
+  return db.getMaintenanceRecordsForSpec(specId);
+}
+
 /// 소모품 남은 수명 계산 결과, ratio 오름차순 정렬(unknown 맨 끝).
 @riverpod
 Future<List<ItemStatusEntry>> sortedItemStatus(

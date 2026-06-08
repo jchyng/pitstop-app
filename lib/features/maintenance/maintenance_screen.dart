@@ -27,7 +27,7 @@ class MaintenanceScreen extends StatelessWidget {
               SizedBox(height: 32),
               Center(
                 child: Text(
-                  '2단계에서 구현됩니다',
+                  '3단계에서 구현됩니다',
                   style: TextStyle(color: AppColors.textTertiary),
                 ),
               ),

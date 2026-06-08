@@ -195,6 +195,248 @@ class _ItemSpecsProviderElement
   int get vehicleId => (origin as ItemSpecsProvider).vehicleId;
 }
 
+String _$itemSpecHash() => r'af600f7975214a537c5430c3a1b1c1cda0876bc8';
+
+/// See also [itemSpec].
+@ProviderFor(itemSpec)
+const itemSpecProvider = ItemSpecFamily();
+
+/// See also [itemSpec].
+class ItemSpecFamily extends Family<AsyncValue<ItemSpec?>> {
+  /// See also [itemSpec].
+  const ItemSpecFamily();
+
+  /// See also [itemSpec].
+  ItemSpecProvider call(int specId) {
+    return ItemSpecProvider(specId);
+  }
+
+  @override
+  ItemSpecProvider getProviderOverride(covariant ItemSpecProvider provider) {
+    return call(provider.specId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'itemSpecProvider';
+}
+
+/// See also [itemSpec].
+class ItemSpecProvider extends AutoDisposeFutureProvider<ItemSpec?> {
+  /// See also [itemSpec].
+  ItemSpecProvider(int specId)
+    : this._internal(
+        (ref) => itemSpec(ref as ItemSpecRef, specId),
+        from: itemSpecProvider,
+        name: r'itemSpecProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$itemSpecHash,
+        dependencies: ItemSpecFamily._dependencies,
+        allTransitiveDependencies: ItemSpecFamily._allTransitiveDependencies,
+        specId: specId,
+      );
+
+  ItemSpecProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.specId,
+  }) : super.internal();
+
+  final int specId;
+
+  @override
+  Override overrideWith(
+    FutureOr<ItemSpec?> Function(ItemSpecRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: ItemSpecProvider._internal(
+        (ref) => create(ref as ItemSpecRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        specId: specId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<ItemSpec?> createElement() {
+    return _ItemSpecProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ItemSpecProvider && other.specId == specId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, specId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin ItemSpecRef on AutoDisposeFutureProviderRef<ItemSpec?> {
+  /// The parameter `specId` of this provider.
+  int get specId;
+}
+
+class _ItemSpecProviderElement
+    extends AutoDisposeFutureProviderElement<ItemSpec?>
+    with ItemSpecRef {
+  _ItemSpecProviderElement(super.provider);
+
+  @override
+  int get specId => (origin as ItemSpecProvider).specId;
+}
+
+String _$maintenanceRecordsHash() =>
+    r'd52da38d7a3e19f8b2ab52e2beb7fd001a016f8b';
+
+/// See also [maintenanceRecords].
+@ProviderFor(maintenanceRecords)
+const maintenanceRecordsProvider = MaintenanceRecordsFamily();
+
+/// See also [maintenanceRecords].
+class MaintenanceRecordsFamily
+    extends Family<AsyncValue<List<MaintenanceRecord>>> {
+  /// See also [maintenanceRecords].
+  const MaintenanceRecordsFamily();
+
+  /// See also [maintenanceRecords].
+  MaintenanceRecordsProvider call(int specId) {
+    return MaintenanceRecordsProvider(specId);
+  }
+
+  @override
+  MaintenanceRecordsProvider getProviderOverride(
+    covariant MaintenanceRecordsProvider provider,
+  ) {
+    return call(provider.specId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'maintenanceRecordsProvider';
+}
+
+/// See also [maintenanceRecords].
+class MaintenanceRecordsProvider
+    extends AutoDisposeFutureProvider<List<MaintenanceRecord>> {
+  /// See also [maintenanceRecords].
+  MaintenanceRecordsProvider(int specId)
+    : this._internal(
+        (ref) => maintenanceRecords(ref as MaintenanceRecordsRef, specId),
+        from: maintenanceRecordsProvider,
+        name: r'maintenanceRecordsProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$maintenanceRecordsHash,
+        dependencies: MaintenanceRecordsFamily._dependencies,
+        allTransitiveDependencies:
+            MaintenanceRecordsFamily._allTransitiveDependencies,
+        specId: specId,
+      );
+
+  MaintenanceRecordsProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.specId,
+  }) : super.internal();
+
+  final int specId;
+
+  @override
+  Override overrideWith(
+    FutureOr<List<MaintenanceRecord>> Function(MaintenanceRecordsRef provider)
+    create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: MaintenanceRecordsProvider._internal(
+        (ref) => create(ref as MaintenanceRecordsRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        specId: specId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<List<MaintenanceRecord>> createElement() {
+    return _MaintenanceRecordsProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MaintenanceRecordsProvider && other.specId == specId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, specId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin MaintenanceRecordsRef
+    on AutoDisposeFutureProviderRef<List<MaintenanceRecord>> {
+  /// The parameter `specId` of this provider.
+  int get specId;
+}
+
+class _MaintenanceRecordsProviderElement
+    extends AutoDisposeFutureProviderElement<List<MaintenanceRecord>>
+    with MaintenanceRecordsRef {
+  _MaintenanceRecordsProviderElement(super.provider);
+
+  @override
+  int get specId => (origin as MaintenanceRecordsProvider).specId;
+}
+
 String _$sortedItemStatusHash() => r'620ae263031a8c0b0cd5d90018833995e8d9c4e4';
 
 /// 소모품 남은 수명 계산 결과, ratio 오름차순 정렬(unknown 맨 끝).
