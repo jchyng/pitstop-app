@@ -24,6 +24,8 @@ abstract final class AppColors {
   static const amberBg = Color(0x24FFB020);
 
   static const red = Color(0xFFFF5247);
+  // rgba(255,82,71,0.14)
+  static const redBg = Color(0x24FF5247);
   static const teal = Color(0xFF3DD6B0);
   // rgba(61,214,176,0.16)
   static const tealBg = Color(0x293DD6B0);

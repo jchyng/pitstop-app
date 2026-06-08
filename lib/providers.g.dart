@@ -195,5 +195,140 @@ class _ItemSpecsProviderElement
   int get vehicleId => (origin as ItemSpecsProvider).vehicleId;
 }
 
+String _$sortedItemStatusHash() => r'620ae263031a8c0b0cd5d90018833995e8d9c4e4';
+
+/// 소모품 남은 수명 계산 결과, ratio 오름차순 정렬(unknown 맨 끝).
+///
+/// Copied from [sortedItemStatus].
+@ProviderFor(sortedItemStatus)
+const sortedItemStatusProvider = SortedItemStatusFamily();
+
+/// 소모품 남은 수명 계산 결과, ratio 오름차순 정렬(unknown 맨 끝).
+///
+/// Copied from [sortedItemStatus].
+class SortedItemStatusFamily extends Family<AsyncValue<List<ItemStatusEntry>>> {
+  /// 소모품 남은 수명 계산 결과, ratio 오름차순 정렬(unknown 맨 끝).
+  ///
+  /// Copied from [sortedItemStatus].
+  const SortedItemStatusFamily();
+
+  /// 소모품 남은 수명 계산 결과, ratio 오름차순 정렬(unknown 맨 끝).
+  ///
+  /// Copied from [sortedItemStatus].
+  SortedItemStatusProvider call(int vehicleId) {
+    return SortedItemStatusProvider(vehicleId);
+  }
+
+  @override
+  SortedItemStatusProvider getProviderOverride(
+    covariant SortedItemStatusProvider provider,
+  ) {
+    return call(provider.vehicleId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'sortedItemStatusProvider';
+}
+
+/// 소모품 남은 수명 계산 결과, ratio 오름차순 정렬(unknown 맨 끝).
+///
+/// Copied from [sortedItemStatus].
+class SortedItemStatusProvider
+    extends AutoDisposeFutureProvider<List<ItemStatusEntry>> {
+  /// 소모품 남은 수명 계산 결과, ratio 오름차순 정렬(unknown 맨 끝).
+  ///
+  /// Copied from [sortedItemStatus].
+  SortedItemStatusProvider(int vehicleId)
+    : this._internal(
+        (ref) => sortedItemStatus(ref as SortedItemStatusRef, vehicleId),
+        from: sortedItemStatusProvider,
+        name: r'sortedItemStatusProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$sortedItemStatusHash,
+        dependencies: SortedItemStatusFamily._dependencies,
+        allTransitiveDependencies:
+            SortedItemStatusFamily._allTransitiveDependencies,
+        vehicleId: vehicleId,
+      );
+
+  SortedItemStatusProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.vehicleId,
+  }) : super.internal();
+
+  final int vehicleId;
+
+  @override
+  Override overrideWith(
+    FutureOr<List<ItemStatusEntry>> Function(SortedItemStatusRef provider)
+    create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: SortedItemStatusProvider._internal(
+        (ref) => create(ref as SortedItemStatusRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        vehicleId: vehicleId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<List<ItemStatusEntry>> createElement() {
+    return _SortedItemStatusProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SortedItemStatusProvider && other.vehicleId == vehicleId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, vehicleId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin SortedItemStatusRef
+    on AutoDisposeFutureProviderRef<List<ItemStatusEntry>> {
+  /// The parameter `vehicleId` of this provider.
+  int get vehicleId;
+}
+
+class _SortedItemStatusProviderElement
+    extends AutoDisposeFutureProviderElement<List<ItemStatusEntry>>
+    with SortedItemStatusRef {
+  _SortedItemStatusProviderElement(super.provider);
+
+  @override
+  int get vehicleId => (origin as SortedItemStatusProvider).vehicleId;
+}
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
