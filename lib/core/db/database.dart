@@ -109,6 +109,11 @@ class AppDatabase extends _$AppDatabase {
         odos.reduce((a, b) => a < b ? a : b);
   }
 
+  Future<void> updateVehicleOdometer(int vehicleId, int km) async {
+    await (update(vehicles)..where((v) => v.id.equals(vehicleId)))
+        .write(VehiclesCompanion(currentOdometer: Value(km)));
+  }
+
   Future<void> addExpenseManually({
     required int vehicleId,
     required String category,
