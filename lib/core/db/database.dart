@@ -77,6 +77,27 @@ class AppDatabase extends _$AppDatabase {
 
   // ─── 조회 ─────────────────────────────────────────────────
 
+  /// 차량의 전체 이력 + 연결된 소모품 스펙을 날짜 내림차순으로 반환.
+  Future<List<({MaintenanceRecord record, ItemSpec? spec})>>
+      getAllRecordsWithSpec(int vehicleId) async {
+    final query = select(maintenanceRecords).join([
+      leftOuterJoin(
+        itemSpecs,
+        itemSpecs.id.equalsExp(maintenanceRecords.itemSpecId),
+      ),
+    ])
+      ..where(maintenanceRecords.vehicleId.equals(vehicleId))
+      ..orderBy([OrderingTerm.desc(maintenanceRecords.date)]);
+
+    final rows = await query.get();
+    return rows
+        .map((row) => (
+              record: row.readTable(maintenanceRecords),
+              spec: row.readTableOrNull(itemSpecs),
+            ))
+        .toList();
+  }
+
   Future<ItemSpec?> getItemSpec(int specId) =>
       (select(itemSpecs)..where((s) => s.id.equals(specId))).getSingleOrNull();
 

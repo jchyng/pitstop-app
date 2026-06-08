@@ -31,6 +31,15 @@ Future<List<ItemSpec>> itemSpecs(Ref ref, int vehicleId) async {
       .get();
 }
 
+typedef RecordWithSpec = ({MaintenanceRecord record, ItemSpec? spec});
+
+@riverpod
+Future<List<RecordWithSpec>> allMaintenanceRecords(
+    Ref ref, int vehicleId) async {
+  final db = ref.watch(appDatabaseProvider);
+  return db.getAllRecordsWithSpec(vehicleId);
+}
+
 @riverpod
 Future<ItemSpec?> itemSpec(Ref ref, int specId) async {
   final db = ref.watch(appDatabaseProvider);

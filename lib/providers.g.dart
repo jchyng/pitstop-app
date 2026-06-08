@@ -195,6 +195,133 @@ class _ItemSpecsProviderElement
   int get vehicleId => (origin as ItemSpecsProvider).vehicleId;
 }
 
+String _$allMaintenanceRecordsHash() =>
+    r'8ef74e45ea61078ae65f0215f3dcd8f15d6aa1cd';
+
+/// See also [allMaintenanceRecords].
+@ProviderFor(allMaintenanceRecords)
+const allMaintenanceRecordsProvider = AllMaintenanceRecordsFamily();
+
+/// See also [allMaintenanceRecords].
+class AllMaintenanceRecordsFamily
+    extends Family<AsyncValue<List<RecordWithSpec>>> {
+  /// See also [allMaintenanceRecords].
+  const AllMaintenanceRecordsFamily();
+
+  /// See also [allMaintenanceRecords].
+  AllMaintenanceRecordsProvider call(int vehicleId) {
+    return AllMaintenanceRecordsProvider(vehicleId);
+  }
+
+  @override
+  AllMaintenanceRecordsProvider getProviderOverride(
+    covariant AllMaintenanceRecordsProvider provider,
+  ) {
+    return call(provider.vehicleId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'allMaintenanceRecordsProvider';
+}
+
+/// See also [allMaintenanceRecords].
+class AllMaintenanceRecordsProvider
+    extends AutoDisposeFutureProvider<List<RecordWithSpec>> {
+  /// See also [allMaintenanceRecords].
+  AllMaintenanceRecordsProvider(int vehicleId)
+    : this._internal(
+        (ref) =>
+            allMaintenanceRecords(ref as AllMaintenanceRecordsRef, vehicleId),
+        from: allMaintenanceRecordsProvider,
+        name: r'allMaintenanceRecordsProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$allMaintenanceRecordsHash,
+        dependencies: AllMaintenanceRecordsFamily._dependencies,
+        allTransitiveDependencies:
+            AllMaintenanceRecordsFamily._allTransitiveDependencies,
+        vehicleId: vehicleId,
+      );
+
+  AllMaintenanceRecordsProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.vehicleId,
+  }) : super.internal();
+
+  final int vehicleId;
+
+  @override
+  Override overrideWith(
+    FutureOr<List<RecordWithSpec>> Function(AllMaintenanceRecordsRef provider)
+    create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: AllMaintenanceRecordsProvider._internal(
+        (ref) => create(ref as AllMaintenanceRecordsRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        vehicleId: vehicleId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<List<RecordWithSpec>> createElement() {
+    return _AllMaintenanceRecordsProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AllMaintenanceRecordsProvider &&
+        other.vehicleId == vehicleId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, vehicleId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin AllMaintenanceRecordsRef
+    on AutoDisposeFutureProviderRef<List<RecordWithSpec>> {
+  /// The parameter `vehicleId` of this provider.
+  int get vehicleId;
+}
+
+class _AllMaintenanceRecordsProviderElement
+    extends AutoDisposeFutureProviderElement<List<RecordWithSpec>>
+    with AllMaintenanceRecordsRef {
+  _AllMaintenanceRecordsProviderElement(super.provider);
+
+  @override
+  int get vehicleId => (origin as AllMaintenanceRecordsProvider).vehicleId;
+}
+
 String _$itemSpecHash() => r'af600f7975214a537c5430c3a1b1c1cda0876bc8';
 
 /// See also [itemSpec].
