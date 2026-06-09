@@ -200,26 +200,18 @@ class _VehicleHero extends ConsumerWidget {
                 onTap: () => _showOdometerSheet(context, ref),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
+                      horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.chip,
+                    color: AppColors.accentBg,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.hairline),
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.edit_outlined,
-                          size: 14, color: AppColors.textTertiary),
-                      SizedBox(width: 5),
-                      Text('주행거리 수정',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textTertiary,
-                            fontFamily: AppText.fontFamily,
-                          )),
-                    ],
-                  ),
+                  child: const Text('수정',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.accent,
+                        fontFamily: AppText.fontFamily,
+                      )),
                 ),
               ),
             ],
