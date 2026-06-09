@@ -32,6 +32,15 @@ abstract final class AppColors {
   static const purple = Color(0xFF9B8CFF);
   // rgba(155,140,255,0.16)
   static const purpleBg = Color(0x299B8CFF);
+  static const indigo = Color(0xFF6B8AFF);
+  // rgba(107,138,255,0.16)
+  static const indigoBg = Color(0x296B8AFF);
+  static const violet = Color(0xFF9B59B6);
+  // rgba(155,89,182,0.14)
+  static const violetBg = Color(0x249B59B6);
+  static const green = Color(0xFF2ECC71);
+  // rgba(46,204,113,0.16)
+  static const greenBg = Color(0x292ECC71);
 }
 
 abstract final class AppText {
@@ -107,6 +116,42 @@ abstract final class AppText {
     fontWeight: FontWeight.w500,
     color: AppColors.textTertiary,
   );
+
+  // 카드 보조 수치 16 / w500
+  static const cardValue = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
+  // 카드 중형 수치 22 / w500
+  static const cardNumber = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+    letterSpacing: -0.44,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
+  // 잔여수명 표시 34 / w500 (color은 상태에 따라 copyWith)
+  static const remainHero = TextStyle(
+    fontSize: 34,
+    fontWeight: FontWeight.w500,
+    letterSpacing: -0.68,
+    fontFeatures: [FontFeature.tabularFigures()],
+    height: 1.0,
+  );
+
+  // 월별 총액 36 / w500
+  static const summaryAmount = TextStyle(
+    fontSize: 36,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+    letterSpacing: -0.72,
+    fontFeatures: [FontFeature.tabularFigures()],
+    height: 1.0,
+  );
 }
 
 abstract final class AppRadius {
@@ -117,6 +162,7 @@ abstract final class AppRadius {
   static const chipShape = BorderRadius.all(Radius.circular(11));
   static const bottomSheet = BorderRadius.vertical(top: Radius.circular(28));
   static const gauge = BorderRadius.all(Radius.circular(3));
+  static const iconBox = BorderRadius.all(Radius.circular(12));
 }
 
 abstract final class AppSpacing {

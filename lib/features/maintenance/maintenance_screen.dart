@@ -548,8 +548,8 @@ class _RecordSliver extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.screenPaddingH, 0,
+              padding: EdgeInsets.fromLTRB(
+                  AppSpacing.screenPaddingH, mi == 0 ? 16 : 0,
                   AppSpacing.screenPaddingH, 10),
               child: Row(
                 children: [

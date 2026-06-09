@@ -6,6 +6,7 @@ import '../../core/db/database.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/form_widgets.dart';
 import '../../providers.dart';
 
 // ─── 카테고리 정의 ────────────────────────────────────────────
@@ -375,7 +376,7 @@ class _ArrowBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
         child: Icon(
           icon,
           size: 18,
@@ -432,15 +433,7 @@ class _SummaryCard extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               '₩${fmtKrw(total)}',
-              style: const TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
-                letterSpacing: -0.72,
-                fontFeatures: [FontFeature.tabularFigures()],
-                fontFamily: AppText.fontFamily,
-                height: 1.0,
-              ),
+              style: AppText.summaryAmount,
             ),
           ),
           if (hasPrev) ...[
@@ -527,14 +520,7 @@ class _MiniCell extends StatelessWidget {
               fontWeight: FontWeight.w500,
             )),
         const SizedBox(height: 4),
-        Text(value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-              fontFamily: AppText.fontFamily,
-              fontFeatures: [FontFeature.tabularFigures()],
-            )),
+        Text(value, style: AppText.cardValue),
       ],
     );
   }
@@ -762,7 +748,7 @@ class _ExpenseRow extends StatelessWidget {
               height: 42,
               decoration: BoxDecoration(
                 color: meta.bg,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.iconBox,
               ),
               child: Icon(icon, size: 20, color: meta.color),
             ),
@@ -1018,7 +1004,7 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 카테고리
-                  _FormLabel('카테고리'),
+                  FormLabel('카테고리'),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
@@ -1035,18 +1021,18 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                         .toList(),
                   ),
                   // 항목명
-                  _FormLabel('항목명'),
+                  FormLabel('항목명'),
                   const SizedBox(height: 8),
                   _FormField(
                     controller: _titleCtrl,
                     hint: '예: 주유, 엔진오일 교체',
                   ),
                   // 날짜
-                  _FormLabel('날짜'),
+                  FormLabel('날짜'),
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: _pickDate,
-                    child: _FormDecor(
+                    child: FormInputDecor(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -1063,7 +1049,7 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                     ),
                   ),
                   // 금액
-                  _FormLabel('금액 (원)'),
+                  FormLabel('금액 (원)'),
                   const SizedBox(height: 8),
                   _FormField(
                     controller: _amountCtrl,
@@ -1073,7 +1059,7 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                     numericFeature: true,
                   ),
                   // 장소
-                  _FormLabel('장소 (선택)'),
+                  FormLabel('장소 (선택)'),
                   const SizedBox(height: 8),
                   _FormField(
                     controller: _placeCtrl,
@@ -1125,45 +1111,6 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
   }
 }
 
-// ─── 폼 공용 위젯 ─────────────────────────────────────────────
-
-class _FormLabel extends StatelessWidget {
-  final String text;
-  const _FormLabel(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 20, bottom: 0),
-      child: Text(text,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textTertiary,
-            fontFamily: AppText.fontFamily,
-          )),
-    );
-  }
-}
-
-class _FormDecor extends StatelessWidget {
-  final Widget child;
-  const _FormDecor({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(10),
-        border: Border.all(color: AppColors.hairline),
-        borderRadius: AppRadius.button,
-      ),
-      child: child,
-    );
-  }
-}
 
 class _FormField extends StatelessWidget {
   final TextEditingController controller;
@@ -1182,7 +1129,7 @@ class _FormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _FormDecor(
+    return FormInputDecor(
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,

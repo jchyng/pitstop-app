@@ -5,6 +5,7 @@ import '../../core/services/notification_service.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/form_widgets.dart';
 import '../../core/widgets/odometer_sheet.dart';
 import '../../domain/logic/remaining_life.dart';
 import '../../providers.dart';
@@ -214,7 +215,7 @@ class _VehicleCard extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               color: AppColors.accentBg,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.iconBox,
             ),
             child: const Icon(Icons.directions_car_rounded,
                 size: 24, color: AppColors.accent),
@@ -320,12 +321,7 @@ class _OdometerCard extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: fmtKm(vehicle.currentOdometer),
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
-                          letterSpacing: -0.44,
-                          fontFeatures: [FontFeature.tabularFigures()],
+                        style: AppText.cardNumber.copyWith(
                           fontFamily: AppText.fontFamily,
                         ),
                       ),
@@ -603,10 +599,10 @@ class _SpecToggleRow extends StatelessWidget {
   static Color _dotColor(String category) => switch (category) {
         '엔진·오일' => AppColors.amber,
         '연료·증발가스' => AppColors.teal,
-        '공조·외부' => Color(0xFF6B8AFF),
+        '공조·외부' => AppColors.indigo,
         '제동·냉각·변속' => AppColors.red,
-        '점화·벨트' => Color(0xFF9B59B6),
-        '타이어·배터리' => Color(0xFF2ECC71),
+        '점화·벨트' => AppColors.violet,
+        '타이어·배터리' => AppColors.green,
         _ => AppColors.textTertiary,
       };
 
@@ -718,7 +714,7 @@ class _FuelAutoCardState extends ConsumerState<_FuelAutoCard> {
                 height: 36,
                 decoration: BoxDecoration(
                   color: AppColors.accentBg,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadius.iconBox,
                 ),
                 child: const Icon(Icons.bolt_rounded,
                     size: 20, color: AppColors.accent),
@@ -942,8 +938,8 @@ class _EditNameSheetState extends State<_EditNameSheet> {
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  width: 32,
-                  height: 32,
+                  width: 36,
+                  height: 36,
                   decoration: const BoxDecoration(
                     color: AppColors.chip,
                     shape: BoxShape.circle,
@@ -956,14 +952,7 @@ class _EditNameSheetState extends State<_EditNameSheet> {
           ),
           const SizedBox(height: 20),
           // 입력 필드
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(10),
-              border: Border.all(color: AppColors.hairline),
-              borderRadius: AppRadius.button,
-            ),
+          FormInputDecor(
             child: TextField(
               controller: _ctrl,
               autofocus: true,

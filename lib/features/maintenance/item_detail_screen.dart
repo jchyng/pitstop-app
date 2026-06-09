@@ -5,6 +5,7 @@ import '../../core/db/database.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/form_widgets.dart';
 import '../../domain/logic/remaining_life.dart';
 import '../../providers.dart';
 
@@ -113,7 +114,7 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
           children: [
             // 상단 네비바
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.screenPaddingH, 14, AppSpacing.screenPaddingH, 0),
               child: Row(
                 children: [
                   _NavBtn(
@@ -351,14 +352,7 @@ class _StatusCard extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               remainText,
-              style: TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.w500,
-                color: remainColor,
-                letterSpacing: -0.68,
-                fontFeatures: const [FontFeature.tabularFigures()],
-                fontFamily: AppText.fontFamily,
-              ),
+              style: AppText.remainHero.copyWith(color: remainColor),
             ),
           ),
           const SizedBox(height: 16),
@@ -908,7 +902,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 작업 유형
-                  _FieldLabel('작업 유형'),
+                  FormLabel('작업 유형'),
                   const SizedBox(height: 8),
                   _SegmentControl(
                     options: const ['교체', '점검', '보충'],
@@ -917,11 +911,11 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                     onChanged: (v) => setState(() => _type = v),
                   ),
                   // 날짜
-                  _FieldLabel('날짜'),
+                  FormLabel('날짜'),
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: _pickDate,
-                    child: _InpDecor(
+                    child: FormInputDecor(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -940,9 +934,9 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                     ),
                   ),
                   // 주행거리
-                  _FieldLabel('주행거리 (km)'),
+                  FormLabel('주행거리 (km)'),
                   const SizedBox(height: 8),
-                  _InpDecor(
+                  FormInputDecor(
                     child: TextField(
                       controller: _odometerCtrl,
                       keyboardType: TextInputType.number,
@@ -966,9 +960,9 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                     ),
                   ),
                   // 비용
-                  _FieldLabel('비용 (원, 선택)'),
+                  FormLabel('비용 (원, 선택)'),
                   const SizedBox(height: 8),
-                  _InpDecor(
+                  FormInputDecor(
                     child: TextField(
                       controller: _amountCtrl,
                       keyboardType: TextInputType.number,
@@ -992,9 +986,9 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                     ),
                   ),
                   // 장소
-                  _FieldLabel('정비소 · 장소 (선택)'),
+                  FormLabel('정비소 · 장소 (선택)'),
                   const SizedBox(height: 8),
-                  _InpDecor(
+                  FormInputDecor(
                     child: TextField(
                       controller: _placeCtrl,
                       style: const TextStyle(
@@ -1013,9 +1007,9 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                     ),
                   ),
                   // 메모
-                  _FieldLabel('메모 (선택)'),
+                  FormLabel('메모 (선택)'),
                   const SizedBox(height: 8),
-                  _InpDecor(
+                  FormInputDecor(
                     child: TextField(
                       controller: _memoCtrl,
                       maxLines: 2,
@@ -1159,43 +1153,6 @@ class _AddBtn extends StatelessWidget {
   }
 }
 
-class _FieldLabel extends StatelessWidget {
-  final String text;
-  const _FieldLabel(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 20, bottom: 0),
-      child: Text(text,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textTertiary,
-            fontFamily: AppText.fontFamily,
-          )),
-    );
-  }
-}
-
-class _InpDecor extends StatelessWidget {
-  final Widget child;
-  const _InpDecor({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(10),
-        border: Border.all(color: AppColors.hairline),
-        borderRadius: AppRadius.button,
-      ),
-      child: child,
-    );
-  }
-}
 
 class _SegmentControl extends StatelessWidget {
   final List<String> options;
@@ -1226,7 +1183,7 @@ class _SegmentControl extends StatelessWidget {
                 onTap: () => onChanged(values[i]),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
                   decoration: BoxDecoration(
                     color: selected == values[i]
                         ? AppColors.accentBg

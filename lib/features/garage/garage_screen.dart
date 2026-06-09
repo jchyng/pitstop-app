@@ -128,7 +128,7 @@ class _GarageBodyState extends ConsumerState<_GarageBody> {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 150),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
+                            horizontal: 10, vertical: 8),
                         decoration: BoxDecoration(
                           color: _groupByCategory
                               ? AppColors.accentBg
@@ -164,12 +164,16 @@ class _GarageBodyState extends ConsumerState<_GarageBody> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 4),
                     // 더보기 이동 버튼
                     GestureDetector(
                       onTap: widget.onNavigateToMore,
-                      child: const Icon(Icons.chevron_right_rounded,
-                          size: 18, color: AppColors.textTertiary),
+                      behavior: HitTestBehavior.opaque,
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                        child: Icon(Icons.chevron_right_rounded,
+                            size: 18, color: AppColors.textTertiary),
+                      ),
                     ),
                   ],
                 ),
@@ -531,14 +535,14 @@ class _ItemStatusRow extends StatelessWidget {
                 onTap: onQuickAdd,
                 behavior: HitTestBehavior.opaque,
                 child: Container(
-                  width: 28,
-                  height: 28,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     color: AppColors.accentBg,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.add_rounded,
-                      size: 16, color: AppColors.accent),
+                      size: 18, color: AppColors.accent),
                 ),
               ),
             ],
