@@ -1,10 +1,10 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/database.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
+import '../../core/utils/snackbar.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/form_widgets.dart';
 import '../../providers.dart';
@@ -160,6 +160,39 @@ class _ExpenseBody extends ConsumerWidget {
     );
   }
 
+  void _openEditForm(BuildContext context, WidgetRef ref, Expense expense) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ExpenseFormSheet(
+        existing: expense,
+        initialYear: expense.date.year,
+        initialMonth: expense.date.month,
+        onSave: (category, title, date, amount, place) async {
+          final db = ref.read(appDatabaseProvider);
+          await db.updateExpense(
+            expenseId: expense.id,
+            category: category,
+            title: title,
+            date: date,
+            amount: amount,
+            place: place,
+          );
+          ref.invalidate(monthlyExpensesProvider(vehicleId, date.year, date.month));
+          ref.invalidate(monthlySummaryProvider(vehicleId, date.year, date.month));
+          // 날짜가 바뀌어 다른 월로 이동한 경우 원래 월도 무효화
+          if (date.year != expense.date.year || date.month != expense.date.month) {
+            ref.invalidate(monthlyExpensesProvider(
+                vehicleId, expense.date.year, expense.date.month));
+            ref.invalidate(monthlySummaryProvider(
+                vehicleId, expense.date.year, expense.date.month));
+          }
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(monthlySummaryProvider(vehicleId, year, month));
@@ -279,6 +312,8 @@ class _ExpenseBody extends ConsumerWidget {
                             ref.invalidate(
                                 monthlySummaryProvider(vehicleId, year, month));
                           },
+                          onEdit: (expense) =>
+                              _openEditForm(context, ref, expense),
                         ),
                 ),
               ),
@@ -404,7 +439,6 @@ class _SummaryCard extends StatelessWidget {
         ? (total / km).round()
         : null;
 
-    // 전달 대비
     final hasPrev = prev > 0;
     final diff = total - prev;
     final pct = hasPrev ? (diff / prev * 100).round() : 0;
@@ -431,10 +465,7 @@ class _SummaryCard extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(
-              '₩${fmtKrw(total)}',
-              style: AppText.summaryAmount,
-            ),
+            child: Text('₩${fmtKrw(total)}', style: AppText.summaryAmount),
           ),
           if (hasPrev) ...[
             const SizedBox(height: 8),
@@ -466,14 +497,12 @@ class _SummaryCard extends StatelessWidget {
               children: [
                 Icon(Icons.remove_rounded, size: 14, color: AppColors.textTertiary),
                 SizedBox(width: 4),
-                Text(
-                  '전월 지출 없음',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textTertiary,
-                    fontFamily: AppText.fontFamily,
-                  ),
-                ),
+                Text('전월 지출 없음',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textTertiary,
+                      fontFamily: AppText.fontFamily,
+                    )),
               ],
             ),
           ],
@@ -485,7 +514,7 @@ class _SummaryCard extends StatelessWidget {
               Expanded(
                 child: _MiniCell(
                   label: '이번 달 주행',
-                  value: km != null ? '${fmtKrw(km)} km' : '—',
+                  value: km != null ? '${fmtKm(km)} km' : '—',
                 ),
               ),
               Expanded(
@@ -526,29 +555,43 @@ class _MiniCell extends StatelessWidget {
   }
 }
 
-// ─── 도넛 카드 ────────────────────────────────────────────────
+// ─── 도넛 카드 (터치 인터랙션) ──────────────────────────────────
 
-class _DonutCard extends StatelessWidget {
+class _DonutCard extends StatefulWidget {
   final ExpenseSummaryData summary;
   const _DonutCard({required this.summary});
 
   @override
+  State<_DonutCard> createState() => _DonutCardState();
+}
+
+class _DonutCardState extends State<_DonutCard> {
+  int? _touchedIndex;
+
+  @override
   Widget build(BuildContext context) {
-    final total = summary.total;
-
-    // 카테고리 순서 고정, 금액 있는 것만 표시
+    final total = widget.summary.total;
     final visible = _kCategories
-        .where((c) => (summary.byCategory[c.key] ?? 0) > 0)
+        .where((c) => (widget.summary.byCategory[c.key] ?? 0) > 0)
         .toList();
 
-    final sections = visible
-        .map((c) => PieChartSectionData(
-              value: summary.byCategory[c.key]!.toDouble(),
-              color: c.color,
-              radius: 14,
-              showTitle: false,
-            ))
-        .toList();
+    final sections = List.generate(visible.length, (i) {
+      final c = visible[i];
+      final isTouched = _touchedIndex == i;
+      return PieChartSectionData(
+        value: widget.summary.byCategory[c.key]!.toDouble(),
+        color: c.color.withAlpha(isTouched ? 255 : 180),
+        radius: isTouched ? 20 : 14,
+        showTitle: false,
+      );
+    });
+
+    // 중앙에 표시할 텍스트 (터치 시 해당 카테고리 정보)
+    final centerTop = _touchedIndex != null
+        ? '₩${fmtKrw(widget.summary.byCategory[visible[_touchedIndex!].key]!)}'
+        : '₩${fmtKrw(total)}';
+    final centerBottom =
+        _touchedIndex != null ? visible[_touchedIndex!].label : '총 지출';
 
     return Container(
       decoration: BoxDecoration(
@@ -560,7 +603,6 @@ class _DonutCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 도넛
           SizedBox(
             width: 120,
             height: 120,
@@ -573,9 +615,22 @@ class _DonutCard extends StatelessWidget {
                     centerSpaceRadius: 42,
                     sectionsSpace: 3,
                     startDegreeOffset: -90,
+                    pieTouchData: PieTouchData(
+                      touchCallback: (event, response) {
+                        setState(() {
+                          if (!event.isInterestedForInteractions ||
+                              response == null ||
+                              response.touchedSection == null) {
+                            _touchedIndex = null;
+                          } else {
+                            _touchedIndex =
+                                response.touchedSection!.touchedSectionIndex;
+                          }
+                        });
+                      },
+                    ),
                   ),
                 ),
-                // 중앙 텍스트 — hole 직경(84px)에서 양쪽 4px 여백 확보
                 SizedBox(
                   width: 76,
                   child: Column(
@@ -583,24 +638,35 @@ class _DonutCard extends StatelessWidget {
                     children: [
                       FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: Text(
-                          '₩${fmtKrw(total)}',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textPrimary,
-                            fontFeatures: [FontFeature.tabularFigures()],
-                            fontFamily: AppText.fontFamily,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 180),
+                          child: Text(
+                            centerTop,
+                            key: ValueKey(centerTop),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary,
+                              fontFeatures: [FontFeature.tabularFigures()],
+                              fontFamily: AppText.fontFamily,
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 2),
-                      const Text('총 지출',
-                          style: TextStyle(
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 180),
+                        child: Text(
+                          centerBottom,
+                          key: ValueKey(centerBottom),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
                             fontSize: 10,
                             color: AppColors.textTertiary,
                             fontFamily: AppText.fontFamily,
-                          )),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -611,46 +677,60 @@ class _DonutCard extends StatelessWidget {
           // 범례
           Expanded(
             child: Column(
-              children: visible.map((c) {
-                final amount = summary.byCategory[c.key]!;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: c.color,
-                          shape: BoxShape.circle,
+              children: List.generate(visible.length, (i) {
+                final c = visible[i];
+                final amount = widget.summary.byCategory[c.key]!;
+                final isTouched = _touchedIndex == i;
+                return GestureDetector(
+                  onTap: () =>
+                      setState(() => _touchedIndex = isTouched ? null : i),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 5, horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: isTouched ? c.bg : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: c.color,
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(c.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                              fontFamily: AppText.fontFamily,
-                            )),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        fmtKrw(amount),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
-                          fontFeatures: [FontFeature.tabularFigures()],
-                          fontFamily: AppText.fontFamily,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(c.label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isTouched
+                                    ? AppColors.textPrimary
+                                    : AppColors.textSecondary,
+                                fontFamily: AppText.fontFamily,
+                              )),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Text(
+                          fmtKrw(amount),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textPrimary,
+                            fontFeatures: [FontFeature.tabularFigures()],
+                            fontFamily: AppText.fontFamily,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
-              }).toList(),
+              }),
             ),
           ),
         ],
@@ -664,8 +744,13 @@ class _DonutCard extends StatelessWidget {
 class _ExpenseListCard extends StatelessWidget {
   final List<Expense> expenses;
   final Future<void> Function(int id) onDelete;
+  final void Function(Expense expense) onEdit;
 
-  const _ExpenseListCard({required this.expenses, required this.onDelete});
+  const _ExpenseListCard({
+    required this.expenses,
+    required this.onDelete,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -680,7 +765,11 @@ class _ExpenseListCard extends StatelessWidget {
       child: Column(
         children: [
           for (var i = 0; i < expenses.length; i++) ...[
-            _ExpenseRow(expense: expenses[i], onDelete: onDelete),
+            _ExpenseRow(
+              expense: expenses[i],
+              onDelete: onDelete,
+              onEdit: onEdit,
+            ),
             if (i < expenses.length - 1)
               const Divider(height: 1, color: AppColors.hairline),
           ],
@@ -693,8 +782,13 @@ class _ExpenseListCard extends StatelessWidget {
 class _ExpenseRow extends StatelessWidget {
   final Expense expense;
   final Future<void> Function(int id) onDelete;
+  final void Function(Expense expense) onEdit;
 
-  const _ExpenseRow({required this.expense, required this.onDelete});
+  const _ExpenseRow({
+    required this.expense,
+    required this.onDelete,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -738,94 +832,98 @@ class _ExpenseRow extends StatelessWidget {
             false;
       },
       onDismissed: (_) => onDelete(expense.id),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        child: Row(
-          children: [
-            // 아이콘 칩
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: meta.bg,
-                borderRadius: AppRadius.iconBox,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => onEdit(expense),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Row(
+            children: [
+              // 아이콘 칩
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: meta.bg,
+                  borderRadius: AppRadius.iconBox,
+                ),
+                child: Icon(icon, size: 20, color: meta.color),
               ),
-              child: Icon(icon, size: 20, color: meta.color),
-            ),
-            const SizedBox(width: 12),
-            // 제목·부제
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          expense.title,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textPrimary,
-                            fontFamily: AppText.fontFamily,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (isAuto) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.accentBg,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.bolt_rounded,
-                                  size: 11, color: AppColors.accent),
-                              SizedBox(width: 2),
-                              Text('자동',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                    color: AppColors.accent,
-                                    fontFamily: AppText.fontFamily,
-                                  )),
-                            ],
+              const SizedBox(width: 12),
+              // 제목·부제
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            expense.title,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary,
+                              fontFamily: AppText.fontFamily,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        if (isAuto) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentBg,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.bolt_rounded,
+                                    size: 11, color: AppColors.accent),
+                                SizedBox(width: 2),
+                                Text('자동',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.accent,
+                                      fontFamily: AppText.fontFamily,
+                                    )),
+                              ],
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    _buildSubtitle(expense),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textTertiary,
-                      fontFamily: AppText.fontFamily,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                    const SizedBox(height: 3),
+                    Text(
+                      _buildSubtitle(expense),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textTertiary,
+                        fontFamily: AppText.fontFamily,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            // 금액
-            Text(
-              '₩${fmtKrw(expense.amount)}',
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
-                fontFeatures: [FontFeature.tabularFigures()],
-                fontFamily: AppText.fontFamily,
+              const SizedBox(width: 12),
+              // 금액
+              Text(
+                '₩${fmtKrw(expense.amount)}',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                  fontFamily: AppText.fontFamily,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -841,7 +939,7 @@ class _ExpenseRow extends StatelessWidget {
   }
 }
 
-// ─── 지출 추가 바텀시트 ───────────────────────────────────────
+// ─── 지출 추가/수정 바텀시트 ──────────────────────────────────
 
 typedef _OnExpenseSave = Future<void> Function(
   String category,
@@ -852,11 +950,13 @@ typedef _OnExpenseSave = Future<void> Function(
 );
 
 class _ExpenseFormSheet extends StatefulWidget {
+  final Expense? existing;
   final int initialYear;
   final int initialMonth;
   final _OnExpenseSave onSave;
 
   const _ExpenseFormSheet({
+    this.existing,
     required this.initialYear,
     required this.initialMonth,
     required this.onSave,
@@ -867,23 +967,34 @@ class _ExpenseFormSheet extends StatefulWidget {
 }
 
 class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
-  String _category = 'fuel';
+  late String _category;
   late DateTime _date;
-  final _titleCtrl = TextEditingController();
-  final _amountCtrl = TextEditingController();
-  final _placeCtrl = TextEditingController();
+  late final TextEditingController _titleCtrl;
+  late final TextEditingController _amountCtrl;
+  late final TextEditingController _placeCtrl;
   bool _saving = false;
 
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
-    // 현재 선택 월이 이번달이면 오늘, 아니면 해당 월 말일
-    if (widget.initialYear == now.year && widget.initialMonth == now.month) {
-      _date = now;
+    final e = widget.existing;
+    _category = e?.category ?? 'fuel';
+
+    if (e != null) {
+      _date = e.date;
     } else {
-      _date = DateTime(widget.initialYear, widget.initialMonth + 1, 0);
+      final now = DateTime.now();
+      if (widget.initialYear == now.year && widget.initialMonth == now.month) {
+        _date = now;
+      } else {
+        _date = DateTime(widget.initialYear, widget.initialMonth + 1, 0);
+      }
     }
+
+    _titleCtrl = TextEditingController(text: e?.title ?? '');
+    _amountCtrl = TextEditingController(
+        text: e != null ? fmtKrw(e.amount) : '');
+    _placeCtrl = TextEditingController(text: e?.place ?? '');
   }
 
   @override
@@ -916,15 +1027,13 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
   Future<void> _save() async {
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('항목명을 입력해주세요')));
+      showAppSnackBar(context, '항목명을 입력해주세요');
       return;
     }
     final amountText = _amountCtrl.text.trim().replaceAll(',', '');
     final amount = int.tryParse(amountText);
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('금액을 올바르게 입력해주세요')));
+      showAppSnackBar(context, '금액을 올바르게 입력해주세요');
       return;
     }
 
@@ -939,10 +1048,7 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
       );
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('저장 실패: $e')));
-      }
+      if (mounted) showAppSnackBar(context, '저장 실패: $e');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -950,6 +1056,7 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isEdit = widget.existing != null;
     final bottom = MediaQuery.viewInsetsOf(context).bottom;
 
     return Container(
@@ -975,13 +1082,15 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('지출 추가',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
-                    fontFamily: AppText.fontFamily,
-                  )),
+              Text(
+                isEdit ? '지출 수정' : '지출 추가',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                  fontFamily: AppText.fontFamily,
+                ),
+              ),
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
@@ -1015,17 +1124,30 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                               color: c.color,
                               bg: c.bg,
                               selected: _category == c.key,
-                              onTap: () =>
-                                  setState(() => _category = c.key),
+                              onTap: () => setState(() => _category = c.key),
                             ))
                         .toList(),
                   ),
                   // 항목명
                   FormLabel('항목명'),
                   const SizedBox(height: 8),
-                  _FormField(
-                    controller: _titleCtrl,
-                    hint: '예: 주유, 엔진오일 교체',
+                  FormInputDecor(
+                    child: TextField(
+                      controller: _titleCtrl,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: AppColors.textPrimary,
+                        fontFamily: AppText.fontFamily,
+                      ),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        border: InputBorder.none,
+                        hintText: '예: 주유, 엔진오일 교체',
+                        hintStyle:
+                            TextStyle(color: AppColors.textTertiary, fontSize: 15),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
                   ),
                   // 날짜
                   FormLabel('날짜'),
@@ -1051,19 +1173,47 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                   // 금액
                   FormLabel('금액 (원)'),
                   const SizedBox(height: 8),
-                  _FormField(
-                    controller: _amountCtrl,
-                    hint: '예: 78000',
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    numericFeature: true,
+                  FormInputDecor(
+                    child: TextField(
+                      controller: _amountCtrl,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [ThousandsInputFormatter()],
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: AppColors.textPrimary,
+                        fontFamily: AppText.fontFamily,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        border: InputBorder.none,
+                        hintText: '예: 78,000',
+                        hintStyle:
+                            TextStyle(color: AppColors.textTertiary, fontSize: 15),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
                   ),
                   // 장소
                   FormLabel('장소 (선택)'),
                   const SizedBox(height: 8),
-                  _FormField(
-                    controller: _placeCtrl,
-                    hint: '예: GS칼텍스 강남',
+                  FormInputDecor(
+                    child: TextField(
+                      controller: _placeCtrl,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: AppColors.textPrimary,
+                        fontFamily: AppText.fontFamily,
+                      ),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        border: InputBorder.none,
+                        hintText: '예: GS칼텍스 강남',
+                        hintStyle:
+                            TextStyle(color: AppColors.textTertiary, fontSize: 15),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   // 저장 버튼
@@ -1106,49 +1256,6 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-
-class _FormField extends StatelessWidget {
-  final TextEditingController controller;
-  final String hint;
-  final TextInputType? keyboardType;
-  final List<TextInputFormatter>? inputFormatters;
-  final bool numericFeature;
-
-  const _FormField({
-    required this.controller,
-    required this.hint,
-    this.keyboardType,
-    this.inputFormatters,
-    this.numericFeature = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return FormInputDecor(
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-        style: TextStyle(
-          fontSize: 15,
-          color: AppColors.textPrimary,
-          fontFamily: AppText.fontFamily,
-          fontFeatures:
-              numericFeature ? const [FontFeature.tabularFigures()] : null,
-        ),
-        decoration: InputDecoration(
-          isDense: true,
-          border: InputBorder.none,
-          hintText: hint,
-          hintStyle: const TextStyle(
-              color: AppColors.textTertiary, fontSize: 15),
-          contentPadding: EdgeInsets.zero,
-        ),
       ),
     );
   }

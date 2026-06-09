@@ -4,6 +4,7 @@ import '../../core/db/database.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
+import '../../core/utils/snackbar.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/form_widgets.dart';
 import '../../core/widgets/odometer_sheet.dart';
@@ -560,31 +561,86 @@ class _SpecManageCard extends ConsumerWidget {
       error: (_, _) => const SizedBox.shrink(),
       data: (specs) {
         if (specs.isEmpty) return const SizedBox.shrink();
-        return Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: AppRadius.card,
-            border: Border.all(color: AppColors.hairline),
-          ),
-          child: Column(
-            children: [
-              for (int i = 0; i < specs.length; i++) ...[
-                _SpecToggleRow(
-                  spec: specs[i],
-                  onToggle: (hidden) async {
-                    await ref
-                        .read(appDatabaseProvider)
-                        .toggleSpecHidden(specs[i].id, hidden: hidden);
-                    ref.invalidate(allItemSpecsProvider(vehicleId));
-                    ref.invalidate(sortedItemStatusProvider(vehicleId));
-                  },
+
+        final visible = specs.where((s) => !s.isHidden).toList();
+        final hidden = specs.where((s) => s.isHidden).toList();
+
+        void toggle(ItemSpec spec, bool hidden) async {
+          await ref
+              .read(appDatabaseProvider)
+              .toggleSpecHidden(spec.id, hidden: hidden);
+          ref.invalidate(allItemSpecsProvider(vehicleId));
+          ref.invalidate(sortedItemStatusProvider(vehicleId));
+        }
+
+        return Column(
+          children: [
+            // 활성 소모품
+            if (visible.isNotEmpty)
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: AppRadius.card,
+                  border: Border.all(color: AppColors.hairline),
                 ),
-                if (i < specs.length - 1)
-                  const Divider(
-                      height: 1, indent: 52, color: AppColors.hairline),
-              ],
+                child: Column(
+                  children: [
+                    for (int i = 0; i < visible.length; i++) ...[
+                      _SpecToggleRow(
+                        spec: visible[i],
+                        onToggle: (h) => toggle(visible[i], h),
+                      ),
+                      if (i < visible.length - 1)
+                        const Divider(
+                            height: 1, indent: 52, color: AppColors.hairline),
+                    ],
+                  ],
+                ),
+              ),
+
+            // 숨긴 소모품 섹션
+            if (hidden.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 20, 0, 8),
+                child: Row(
+                  children: [
+                    const Text('숨긴 소모품',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textTertiary,
+                          letterSpacing: 0.04,
+                          fontFamily: AppText.fontFamily,
+                        )),
+                    const SizedBox(width: 10),
+                    Expanded(
+                        child:
+                            Container(height: 1, color: AppColors.hairline)),
+                  ],
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: AppRadius.card,
+                  border: Border.all(color: AppColors.hairline),
+                ),
+                child: Column(
+                  children: [
+                    for (int i = 0; i < hidden.length; i++) ...[
+                      _SpecToggleRow(
+                        spec: hidden[i],
+                        onToggle: (h) => toggle(hidden[i], h),
+                      ),
+                      if (i < hidden.length - 1)
+                        const Divider(
+                            height: 1, indent: 52, color: AppColors.hairline),
+                    ],
+                  ],
+                ),
+              ),
             ],
-          ),
+          ],
         );
       },
     );
@@ -881,8 +937,7 @@ class _EditNameSheetState extends State<_EditNameSheet> {
   Future<void> _save() async {
     final name = _ctrl.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('별칭을 입력해주세요')));
+      showAppSnackBar(context, '별칭을 입력해주세요');
       return;
     }
     setState(() => _saving = true);
@@ -890,10 +945,7 @@ class _EditNameSheetState extends State<_EditNameSheet> {
       await widget.onSave(name);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('저장 실패: $e')));
-      }
+      if (mounted) showAppSnackBar(context, '저장 실패: $e');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

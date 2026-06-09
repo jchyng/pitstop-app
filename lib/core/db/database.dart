@@ -223,9 +223,15 @@ class AppDatabase extends _$AppDatabase {
   // ─── last_replaced 캐시 갱신 ──────────────────────────────
 
   Future<void> _refreshLastReplaced(int specId) async {
+    final spec = await getItemSpec(specId);
+    // inspect_only 항목은 '점검' 기록도 마지막 서비스 기준으로 인정
+    final relevantTypes = spec?.behavior == 'inspect_only'
+        ? ['replace', 'inspect']
+        : ['replace'];
+
     final latest = await (select(maintenanceRecords)
           ..where((r) =>
-              r.itemSpecId.equals(specId) & r.type.equals('replace'))
+              r.itemSpecId.equals(specId) & r.type.isIn(relevantTypes))
           ..orderBy([(r) => OrderingTerm.desc(r.date)])
           ..limit(1))
         .getSingleOrNull();
@@ -236,6 +242,19 @@ class AppDatabase extends _$AppDatabase {
         lastReplacedDate: Value(latest?.date),
       ),
     );
+  }
+
+  // ─── 차량 currentOdometer 재계산 ─────────────────────────
+  // 기록 삭제·수정 후 최고 odometer가 바뀔 수 있으므로 모든 기록의 max로 재설정.
+  Future<void> _refreshCurrentOdometer(int vehicleId) async {
+    final records = await (select(maintenanceRecords)
+          ..where((r) => r.vehicleId.equals(vehicleId)))
+        .get();
+    if (records.isEmpty) return;
+    final maxOdo =
+        records.map((r) => r.odometer).reduce((a, b) => a > b ? a : b);
+    await (update(vehicles)..where((v) => v.id.equals(vehicleId)))
+        .write(VehiclesCompanion(currentOdometer: Value(maxOdo)));
   }
 
   // ─── 이력 CRUD ────────────────────────────────────────────
@@ -279,7 +298,10 @@ class AppDatabase extends _$AppDatabase {
             .write(MaintenanceRecordsCompanion(expenseId: Value(expId)));
       }
 
-      if (type == 'replace') await _refreshLastReplaced(specId);
+      // replace와 inspect 모두 lastReplaced 캐시에 영향
+      if (type == 'replace' || type == 'inspect') {
+        await _refreshLastReplaced(specId);
+      }
 
       final vehicle =
           await (select(vehicles)..where((v) => v.id.equals(vehicleId)))
@@ -345,9 +367,11 @@ class AppDatabase extends _$AppDatabase {
             .write(const MaintenanceRecordsCompanion(expenseId: Value(null)));
       }
 
-      if (type == 'replace' || existing.type == 'replace') {
+      if (type == 'replace' || existing.type == 'replace' ||
+          type == 'inspect' || existing.type == 'inspect') {
         await _refreshLastReplaced(existing.itemSpecId!);
       }
+      await _refreshCurrentOdometer(existing.vehicleId);
 
       final vehicle =
           await (select(vehicles)..where((v) => v.id.equals(existing.vehicleId)))
@@ -368,6 +392,26 @@ class AppDatabase extends _$AppDatabase {
       await (delete(maintenanceRecords)..where((r) => r.id.equals(rec.id)))
           .go();
       if (rec.itemSpecId != null) await _refreshLastReplaced(rec.itemSpecId!);
+      await _refreshCurrentOdometer(rec.vehicleId);
     });
+  }
+
+  Future<void> updateExpense({
+    required int expenseId,
+    required String category,
+    required String title,
+    required DateTime date,
+    required int amount,
+    String? place,
+  }) async {
+    await (update(expenses)..where((e) => e.id.equals(expenseId))).write(
+      ExpensesCompanion(
+        category: Value(category),
+        title: Value(title),
+        date: Value(date),
+        amount: Value(amount),
+        place: Value(place),
+      ),
+    );
   }
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/database.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
+import '../../core/utils/snackbar.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/form_widgets.dart';
 import '../../domain/logic/remaining_life.dart';
@@ -247,6 +247,10 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
     }
     if (!context.mounted) return;
 
+    final vehicle = ref.read(vehiclesProvider).valueOrNull
+        ?.where((v) => v.id == widget.vehicleId)
+        .firstOrNull;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -254,6 +258,8 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
       builder: (_) => _RecordFormSheet(
         existing: existing,
         initialAmount: initialAmount,
+        behavior: spec.behavior,
+        currentOdometer: vehicle?.currentOdometer,
         onSave: (type, date, odometer, amount, place, memo) async {
           final db = ref.read(appDatabaseProvider);
           if (existing == null) {
@@ -306,6 +312,7 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
     ref.invalidate(itemSpecProvider(widget.spec.id));
     ref.invalidate(maintenanceRecordsProvider(widget.spec.id));
     ref.invalidate(sortedItemStatusProvider(widget.vehicleId));
+    ref.invalidate(allMaintenanceRecordsProvider(widget.vehicleId));
     ref.invalidate(vehiclesProvider);
   }
 }
@@ -700,12 +707,16 @@ typedef _OnSave = Future<void> Function(
 class _RecordFormSheet extends StatefulWidget {
   final MaintenanceRecord? existing;
   final int? initialAmount;
+  final String? behavior;
+  final int? currentOdometer;
   final _OnSave onSave;
   final Future<void> Function()? onDelete;
 
   const _RecordFormSheet({
     this.existing,
     this.initialAmount,
+    this.behavior,
+    this.currentOdometer,
     required this.onSave,
     this.onDelete,
   });
@@ -724,16 +735,41 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
 
   bool _saving = false;
 
+  List<String> get _segmentOptions => switch (widget.behavior) {
+        'replace_only' => const ['교체', '보충'],
+        'inspect_only' => const ['점검', '보충'],
+        _ => const ['교체', '점검', '보충'],
+      };
+
+  List<String> get _segmentValues => switch (widget.behavior) {
+        'replace_only' => const ['replace', 'refill'],
+        'inspect_only' => const ['inspect', 'refill'],
+        _ => const ['replace', 'inspect', 'refill'],
+      };
+
   @override
   void initState() {
     super.initState();
     final e = widget.existing;
-    _type = e?.type ?? 'replace';
+
+    // behavior에 따라 유효한 타입으로 초기값 결정
+    final availableValues = _segmentValues;
+    final rawType =
+        e?.type ?? (widget.behavior == 'inspect_only' ? 'inspect' : 'replace');
+    _type =
+        availableValues.contains(rawType) ? rawType : availableValues.first;
+
     _date = e?.date ?? DateTime.now();
-    _odometerCtrl =
-        TextEditingController(text: e != null ? '${e.odometer}' : '');
+
+    // 신규 추가 시 현재 차량 주행거리를 기본값으로 채움
+    final defaultOdo = e != null
+        ? fmtKm(e.odometer)
+        : (widget.currentOdometer != null && widget.currentOdometer! > 0
+            ? fmtKm(widget.currentOdometer!)
+            : '');
+    _odometerCtrl = TextEditingController(text: defaultOdo);
     _amountCtrl = TextEditingController(
-      text: widget.initialAmount != null ? '${widget.initialAmount}' : '',
+      text: widget.initialAmount != null ? fmtKrw(widget.initialAmount!) : '',
     );
     _placeCtrl = TextEditingController(text: e?.place ?? '');
     _memoCtrl = TextEditingController(text: e?.memo ?? '');
@@ -749,25 +785,19 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
   }
 
   Future<void> _save() async {
-    final odometerText = _odometerCtrl.text.trim();
+    final odometerText = _odometerCtrl.text.trim().replaceAll(',', '');
     if (odometerText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('주행거리를 입력해주세요')),
-      );
+      showAppSnackBar(context, '주행거리를 입력해주세요');
       return;
     }
-    final odometer = int.tryParse(odometerText.replaceAll(',', ''));
+    final odometer = int.tryParse(odometerText);
     if (odometer == null || odometer <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('주행거리가 올바르지 않습니다')),
-      );
+      showAppSnackBar(context, '주행거리가 올바르지 않습니다');
       return;
     }
 
-    final amountText = _amountCtrl.text.trim();
-    final amount = amountText.isEmpty
-        ? null
-        : int.tryParse(amountText.replaceAll(',', ''));
+    final amountText = _amountCtrl.text.trim().replaceAll(',', '');
+    final amount = amountText.isEmpty ? null : int.tryParse(amountText);
 
     setState(() => _saving = true);
     try {
@@ -781,11 +811,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
       );
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('저장 실패: $e')),
-        );
-      }
+      if (mounted) showAppSnackBar(context, '저장 실패: $e');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -821,11 +847,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
         await widget.onDelete!();
         if (mounted) Navigator.of(context).pop();
       } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('삭제 실패: $e')),
-          );
-        }
+        if (mounted) showAppSnackBar(context, '삭제 실패: $e');
       } finally {
         if (mounted) setState(() => _saving = false);
       }
@@ -905,8 +927,8 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                   FormLabel('작업 유형'),
                   const SizedBox(height: 8),
                   _SegmentControl(
-                    options: const ['교체', '점검', '보충'],
-                    values: const ['replace', 'inspect', 'refill'],
+                    options: _segmentOptions,
+                    values: _segmentValues,
                     selected: _type,
                     onChanged: (v) => setState(() => _type = v),
                   ),
@@ -940,9 +962,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                     child: TextField(
                       controller: _odometerCtrl,
                       keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly
-                      ],
+                      inputFormatters: [ThousandsInputFormatter()],
                       style: const TextStyle(
                         fontSize: 15,
                         color: AppColors.textPrimary,
@@ -952,7 +972,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                       decoration: const InputDecoration(
                         isDense: true,
                         border: InputBorder.none,
-                        hintText: '예: 44421',
+                        hintText: '예: 44,421',
                         hintStyle: TextStyle(
                             color: AppColors.textTertiary, fontSize: 15),
                         contentPadding: EdgeInsets.zero,
@@ -966,9 +986,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                     child: TextField(
                       controller: _amountCtrl,
                       keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly
-                      ],
+                      inputFormatters: [ThousandsInputFormatter()],
                       style: const TextStyle(
                         fontSize: 15,
                         color: AppColors.textPrimary,
@@ -978,7 +996,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                       decoration: const InputDecoration(
                         isDense: true,
                         border: InputBorder.none,
-                        hintText: '예: 95000',
+                        hintText: '예: 95,000',
                         hintStyle: TextStyle(
                             color: AppColors.textTertiary, fontSize: 15),
                         contentPadding: EdgeInsets.zero,
@@ -1324,7 +1342,6 @@ class _SpecInfoSheet extends StatelessWidget {
 }
 
 // ─── 유틸 ─────────────────────────────────────────────────────
-
 
 String _fmtInterval(int? km, int? months) {
   final parts = <String>[];

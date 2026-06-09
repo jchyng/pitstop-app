@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/catalog_loader.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/utils/format.dart';
+import '../../core/utils/snackbar.dart';
 import '../../providers.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -77,10 +79,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  void _snack(String msg) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
-  }
+  void _snack(String msg) => showAppSnackBar(context, msg);
 
   @override
   Widget build(BuildContext context) {
@@ -288,9 +287,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               const SizedBox(height: 8),
               _InputBox(
                 controller: _odometerCtrl,
-                hint: '예: 44500',
+                hint: '예: 44,500',
                 keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                inputFormatters: [ThousandsInputFormatter()],
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _submit(),
               ),

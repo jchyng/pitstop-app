@@ -4,6 +4,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/tokens.dart';
 import 'core/theme/tokens.dart' show AppColors, AppText;
 import 'core/utils/format.dart';
+import 'core/utils/snackbar.dart';
 import 'core/utils/notification_parser.dart';
 import 'features/garage/garage_screen.dart';
 import 'features/maintenance/maintenance_screen.dart';
@@ -145,28 +146,10 @@ class _MainShellState extends ConsumerState<MainShell> {
     ref.invalidate(monthlySummaryProvider(vehicleId, expense.date.year, expense.date.month));
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.bolt_rounded, color: AppColors.accent, size: 16),
-              const SizedBox(width: 8),
-              Text(
-                '주유비 ₩${fmtKrw(expense.amount)} 자동 기록됨',
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontFamily: AppText.fontFamily,
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: const Color(0xFF1A1E26),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        ),
+      showAppSnackBar(
+        context,
+        '주유비 ₩${fmtKrw(expense.amount)} 자동 기록됨',
+        leading: const Icon(Icons.bolt_rounded, color: AppColors.accent, size: 16),
       );
     }
   }
@@ -209,8 +192,8 @@ class _PitstopTabBar extends StatelessWidget {
             onTap: () => onTap(2),
           ),
           _Tab(
-            icon: Icons.more_horiz_rounded,
-            activeIcon: Icons.more_horiz_rounded,
+            icon: Icons.tune_outlined,
+            activeIcon: Icons.tune_rounded,
             label: '더보기',
             active: selectedIndex == 3,
             onTap: () => onTap(3),

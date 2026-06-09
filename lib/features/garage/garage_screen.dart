@@ -231,17 +231,12 @@ class _VehicleHero extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Flexible(
-              child: Text(vehicle.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleLarge),
-            ),
-            const SizedBox(width: 6),
-            const Icon(Icons.keyboard_arrow_down_rounded,
-                size: 18, color: AppColors.textTertiary),
-          ]),
+          Text(
+            vehicle.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           if (vehicle.trim != null) ...[
             const SizedBox(height: 3),
             Text(vehicle.trim!,
@@ -422,20 +417,13 @@ class _ItemStatusCard extends ConsumerWidget {
         ),
       ));
 
-      for (var i = 0; i < group.length; i++) {
+      for (final entry in group) {
         children.add(_ItemStatusRow(
-          spec: group[i].spec,
-          result: group[i].result,
-          onTap: () => _pushDetail(context, group[i].spec.id),
-          onQuickAdd: () =>
-              _pushDetailWithForm(context, group[i].spec.id),
+          spec: entry.spec,
+          result: entry.result,
+          onTap: () => _pushDetail(context, entry.spec.id),
+          onQuickAdd: () => _pushDetailWithForm(context, entry.spec.id),
         ));
-        if (i < group.length - 1) {
-          children.add(const Divider(
-              height: 1,
-              indent: AppSpacing.cardPaddingH,
-              color: AppColors.hairline));
-        }
       }
     }
 
