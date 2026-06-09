@@ -147,71 +147,124 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           color: AppColors.textTertiary,
                           fontFamily: AppText.fontFamily)),
                 )
-              else
-                Column(
-                  children: _catalogs!.map((cat) {
-                    final selected = _selectedPath == cat.assetPath;
-                    return GestureDetector(
-                      onTap: () =>
-                          setState(() => _selectedPath = cat.assetPath),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 160),
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 16),
-                        decoration: BoxDecoration(
-                          color: selected
-                              ? AppColors.accentBg
-                              : AppColors.surface,
-                          borderRadius: AppRadius.card,
-                          border: Border.all(
-                            color: selected
-                                ? AppColors.accent
-                                : AppColors.hairline,
+              else if (_catalogs!.length == 1)
+                // 카탈로그가 1개면 자동 선택 — 이름 뱃지만 표시
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 18, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentBg,
+                    borderRadius: AppRadius.card,
+                    border: Border.all(color: AppColors.accent),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 22,
+                        height: 22,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.accent,
+                        ),
+                        child: const Icon(Icons.check_rounded,
+                            size: 14, color: Colors.white),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          _catalogs!.first.nameKo,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.accent,
+                            fontFamily: AppText.fontFamily,
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 160),
-                              width: 22,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: selected
-                                    ? AppColors.accent
-                                    : Colors.transparent,
-                                border: Border.all(
-                                  color: selected
-                                      ? AppColors.accent
-                                      : AppColors.textTertiary,
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: selected
-                                  ? const Icon(Icons.check_rounded,
-                                      size: 14, color: Colors.white)
-                                  : null,
-                            ),
-                            const SizedBox(width: 14),
-                            Text(
-                              cat.nameKo,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: selected
-                                    ? FontWeight.w500
-                                    : FontWeight.w400,
-                                color: selected
-                                    ? AppColors.accent
-                                    : AppColors.textPrimary,
-                                fontFamily: AppText.fontFamily,
-                              ),
-                            ),
-                          ],
+                      ),
+                      const Text(
+                        '자동 선택',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.accent,
+                          fontFamily: AppText.fontFamily,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    );
-                  }).toList(),
+                    ],
+                  ),
+                )
+              else
+                // 복수 카탈로그 — 스크롤 가능 영역
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 260),
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: _catalogs!.map((cat) {
+                      final selected = _selectedPath == cat.assetPath;
+                      return GestureDetector(
+                        onTap: () =>
+                            setState(() => _selectedPath = cat.assetPath),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 160),
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 16),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? AppColors.accentBg
+                                : AppColors.surface,
+                            borderRadius: AppRadius.card,
+                            border: Border.all(
+                              color: selected
+                                  ? AppColors.accent
+                                  : AppColors.hairline,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 160),
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: selected
+                                      ? AppColors.accent
+                                      : Colors.transparent,
+                                  border: Border.all(
+                                    color: selected
+                                        ? AppColors.accent
+                                        : AppColors.textTertiary,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: selected
+                                    ? const Icon(Icons.check_rounded,
+                                        size: 14, color: Colors.white)
+                                    : null,
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Text(
+                                  cat.nameKo,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: selected
+                                        ? FontWeight.w500
+                                        : FontWeight.w400,
+                                    color: selected
+                                        ? AppColors.accent
+                                        : AppColors.textPrimary,
+                                    fontFamily: AppText.fontFamily,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
 
               const SizedBox(height: 32),
@@ -224,7 +277,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               const SizedBox(height: 8),
               _InputBox(
                 controller: _nicknameCtrl,
-                hint: '예: 내 렉스턴',
+                hint: _selectedPath != null && _catalogs != null
+                    ? '예: 내 ${_catalogs!.firstWhere((c) => c.assetPath == _selectedPath).nameKo.split(' ').first}'
+                    : '예: 내 차',
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 14),
