@@ -12,6 +12,9 @@ import 'features/more/more_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'providers.dart';
 
+/// 알림 탭 딥링크에 사용되는 전역 navigator key.
+final navigatorKey = GlobalKey<NavigatorState>();
+
 class App extends StatelessWidget {
   const App({super.key});
 
@@ -21,6 +24,7 @@ class App extends StatelessWidget {
       title: 'Pitstop',
       theme: appTheme,
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
       home: const _RootRouter(),
     );
   }
@@ -104,6 +108,9 @@ class _MainShellState extends ConsumerState<MainShell> {
       fuelNotificationStreamProvider,
       (_, next) => next.whenData(_autoSaveFuel),
     );
+
+    // 소모품 상태 변경 시 알림 재스케줄 (의존성 변경 시 자동 재실행)
+    ref.watch(scheduleNotificationsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.bg,

@@ -988,6 +988,27 @@ class _SortedItemStatusProviderElement
   int get vehicleId => (origin as SortedItemStatusProvider).vehicleId;
 }
 
+String _$scheduleNotificationsHash() =>
+    r'd6e427b342174376844357fb1c0c44e098b4857f';
+
+/// vehicles + sortedItemStatus 를 watch해 소모품 상태 변경 시 자동으로
+/// 로컬 알림을 재스케줄한다. MainShell에서 ref.watch만 하면 된다.
+///
+/// Copied from [scheduleNotifications].
+@ProviderFor(scheduleNotifications)
+final scheduleNotificationsProvider = AutoDisposeFutureProvider<void>.internal(
+  scheduleNotifications,
+  name: r'scheduleNotificationsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$scheduleNotificationsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef ScheduleNotificationsRef = AutoDisposeFutureProviderRef<void>;
 String _$fuelNotificationStreamHash() =>
     r'3408e3493cb0b6e3da61d7593c50ca9413aa5309';
 

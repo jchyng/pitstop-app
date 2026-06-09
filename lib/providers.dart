@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'core/db/database.dart';
+import 'core/services/local_notification_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/utils/notification_parser.dart';
 import 'domain/logic/remaining_life.dart';
@@ -130,6 +131,20 @@ Future<List<ItemStatusEntry>> sortedItemStatus(
   });
 
   return entries;
+}
+
+// ─── 로컬 알림 스케줄 ─────────────────────────────────────────
+
+/// vehicles + sortedItemStatus 를 watch해 소모품 상태 변경 시 자동으로
+/// 로컬 알림을 재스케줄한다. MainShell에서 ref.watch만 하면 된다.
+@riverpod
+Future<void> scheduleNotifications(Ref ref) async {
+  final vehicles = await ref.watch(vehiclesProvider.future);
+  if (vehicles.isEmpty) return;
+  final vehicleId = vehicles.first.id;
+  LocalNotificationService.currentVehicleId = vehicleId;
+  final entries = await ref.watch(sortedItemStatusProvider(vehicleId).future);
+  await LocalNotificationService.scheduleAll(entries);
 }
 
 // ─── 알림 파싱 ────────────────────────────────────────────────
