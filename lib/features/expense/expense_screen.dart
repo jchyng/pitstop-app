@@ -467,6 +467,22 @@ class _SummaryCard extends StatelessWidget {
                 ),
               ],
             ),
+          ] else if (total > 0) ...[
+            const SizedBox(height: 8),
+            const Row(
+              children: [
+                Icon(Icons.remove_rounded, size: 14, color: AppColors.textTertiary),
+                SizedBox(width: 4),
+                Text(
+                  '전월 지출 없음',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textTertiary,
+                    fontFamily: AppText.fontFamily,
+                  ),
+                ),
+              ],
+            ),
           ],
           const SizedBox(height: 16),
           const Divider(height: 1, color: AppColors.hairline),
