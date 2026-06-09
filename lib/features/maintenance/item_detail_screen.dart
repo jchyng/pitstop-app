@@ -501,7 +501,7 @@ class _GridCell extends StatelessWidget {
 
 // ─── 타임라인 이력 행 ──────────────────────────────────────────
 
-class _RecordTile extends StatelessWidget {
+class _RecordTile extends StatefulWidget {
   final MaintenanceRecord record;
   final bool isFirst;
   final bool isLast;
@@ -515,50 +515,60 @@ class _RecordTile extends StatelessWidget {
   });
 
   @override
+  State<_RecordTile> createState() => _RecordTileState();
+}
+
+class _RecordTileState extends State<_RecordTile> {
+  bool _memoExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
+    final record = widget.record;
+    final hasMemo = record.memo != null && record.memo!.isNotEmpty;
+
     return IntrinsicHeight(
       child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 타임라인 레일
-        SizedBox(
-          width: 22,
-          child: Column(
-            children: [
-              const SizedBox(height: 6),
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isFirst ? AppColors.accent : AppColors.textTertiary,
-                  boxShadow: isFirst
-                      ? [
-                          BoxShadow(
-                            color: AppColors.accentBg,
-                            blurRadius: 0,
-                            spreadRadius: 3,
-                          )
-                        ]
-                      : null,
-                ),
-              ),
-              if (!isLast)
-                Expanded(
-                  child: Container(
-                    width: 1,
-                    color: AppColors.hairline,
-                    margin: const EdgeInsets.only(top: 5),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 타임라인 레일
+          SizedBox(
+            width: 22,
+            child: Column(
+              children: [
+                const SizedBox(height: 6),
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: widget.isFirst
+                        ? AppColors.accent
+                        : AppColors.textTertiary,
+                    boxShadow: widget.isFirst
+                        ? [
+                            BoxShadow(
+                              color: AppColors.accentBg,
+                              blurRadius: 0,
+                              spreadRadius: 3,
+                            )
+                          ]
+                        : null,
                   ),
                 ),
-            ],
+                if (!widget.isLast)
+                  Expanded(
+                    child: Container(
+                      width: 1,
+                      color: AppColors.hairline,
+                      margin: const EdgeInsets.only(top: 5),
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        // 카드
-        Expanded(
-          child: GestureDetector(
-            onTap: onEdit,
+          const SizedBox(width: 12),
+          // 카드
+          Expanded(
             child: Container(
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
@@ -566,59 +576,109 @@ class _RecordTile extends StatelessWidget {
                 borderRadius: AppRadius.innerCard,
                 border: Border.all(color: AppColors.hairline),
               ),
-              padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.cardPaddingH, 14, AppSpacing.cardPaddingH, 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(fmtDateFull(record.date), style: AppText.item),
-                      const Icon(Icons.chevron_right_rounded,
-                          size: 18, color: AppColors.textTertiary),
-                    ],
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    '${fmtKm(record.odometer)} km · ${_typeLabel(record.type)}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                      fontFamily: AppText.fontFamily,
-                    ),
-                  ),
-                  if (record.place != null && record.place!.isNotEmpty) ...[
-                    const SizedBox(height: 3),
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on_outlined,
-                            size: 12, color: AppColors.textTertiary),
-                        const SizedBox(width: 3),
-                        Flexible(
-                          child: Text(
-                            record.place!,
+                  // ── 편집 탭 영역 (날짜·주행거리·장소) ──────────
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: widget.onEdit,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        AppSpacing.cardPaddingH,
+                        14,
+                        AppSpacing.cardPaddingH,
+                        hasMemo ? 12 : 14,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(fmtDateFull(record.date),
+                                  style: AppText.item),
+                              const Icon(Icons.chevron_right_rounded,
+                                  size: 18, color: AppColors.textTertiary),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            '${fmtKm(record.odometer)} km · ${_typeLabel(record.type)}',
                             style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textTertiary,
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
                               fontFamily: AppText.fontFamily,
                             ),
                           ),
-                        ),
-                      ],
+                          if (record.place != null &&
+                              record.place!.isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                const Icon(Icons.location_on_outlined,
+                                    size: 12, color: AppColors.textTertiary),
+                                const SizedBox(width: 3),
+                                Flexible(
+                                  child: Text(
+                                    record.place!,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textTertiary,
+                                      fontFamily: AppText.fontFamily,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
-                  ],
-                  if (record.memo != null && record.memo!.isNotEmpty) ...[
-                    const SizedBox(height: 9),
+                  ),
+
+                  // ── 메모 토글 영역 ───────────────────────────
+                  if (hasMemo) ...[
                     const Divider(height: 1, color: AppColors.hairline),
-                    const SizedBox(height: 9),
-                    Text(
-                      record.memo!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textTertiary,
-                        height: 1.55,
-                        fontFamily: AppText.fontFamily,
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () =>
+                          setState(() => _memoExpanded = !_memoExpanded),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.cardPaddingH,
+                            10,
+                            AppSpacing.cardPaddingH,
+                            10),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                record.memo!,
+                                maxLines: _memoExpanded ? null : 1,
+                                overflow: _memoExpanded
+                                    ? TextOverflow.visible
+                                    : TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textTertiary,
+                                  height: 1.55,
+                                  fontFamily: AppText.fontFamily,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Icon(
+                              _memoExpanded
+                                  ? Icons.expand_less_rounded
+                                  : Icons.expand_more_rounded,
+                              size: 16,
+                              color: AppColors.textTertiary,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -626,9 +686,8 @@ class _RecordTile extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ],
-    ),
+        ],
+      ),
     );
   }
 }
