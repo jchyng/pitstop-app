@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'core/db/database.dart';
-import 'core/db/catalog_loader.dart';
 import 'domain/logic/remaining_life.dart';
 
 part 'providers.g.dart';
@@ -13,8 +12,7 @@ AppDatabase appDatabase(Ref ref) => AppDatabase();
 
 @riverpod
 Future<void> appInit(Ref ref) async {
-  final db = ref.watch(appDatabaseProvider);
-  await CatalogLoader.seedIfEmpty(db);
+  ref.watch(appDatabaseProvider);
 }
 
 @riverpod

@@ -6,6 +6,8 @@ import 'features/garage/garage_screen.dart';
 import 'features/maintenance/maintenance_screen.dart';
 import 'features/expense/expense_screen.dart';
 import 'features/more/more_screen.dart';
+import 'features/onboarding/onboarding_screen.dart';
+import 'providers.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -16,7 +18,56 @@ class App extends StatelessWidget {
       title: 'Pitstop',
       theme: appTheme,
       debugShowCheckedModeBanner: false,
-      home: const MainShell(),
+      home: const _RootRouter(),
+    );
+  }
+}
+
+// ─── 루트 라우터 ─────────────────────────────────────────────────
+
+class _RootRouter extends ConsumerWidget {
+  const _RootRouter();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final initAsync = ref.watch(appInitProvider);
+
+    return initAsync.when(
+      loading: () => const _SplashScreen(),
+      error: (e, _) => Scaffold(
+        backgroundColor: AppColors.bg,
+        body: Center(
+          child: Text('초기화 오류: $e',
+              style: const TextStyle(color: AppColors.textSecondary)),
+        ),
+      ),
+      data: (_) {
+        final vehiclesAsync = ref.watch(vehiclesProvider);
+        return vehiclesAsync.when(
+          loading: () => const _SplashScreen(),
+          error: (e, _) => Scaffold(
+            backgroundColor: AppColors.bg,
+            body: Center(
+              child: Text('오류: $e',
+                  style: const TextStyle(color: AppColors.textSecondary)),
+            ),
+          ),
+          data: (vehicles) =>
+              vehicles.isEmpty ? const OnboardingScreen() : const MainShell(),
+        );
+      },
+    );
+  }
+}
+
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: AppColors.bg,
+      body: Center(child: CircularProgressIndicator(color: AppColors.accent)),
     );
   }
 }
