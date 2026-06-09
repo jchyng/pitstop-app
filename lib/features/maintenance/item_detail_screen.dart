@@ -490,7 +490,8 @@ class _RecordTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return IntrinsicHeight(
+      child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 타임라인 레일
@@ -517,11 +518,12 @@ class _RecordTile extends StatelessWidget {
                 ),
               ),
               if (!isLast)
-                Container(
-                  width: 2,
-                  height: 88,
-                  color: AppColors.hairline,
-                  margin: const EdgeInsets.only(top: 6),
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    color: AppColors.hairline,
+                    margin: const EdgeInsets.only(top: 6),
+                  ),
                 ),
             ],
           ),
@@ -603,6 +605,7 @@ class _RecordTile extends StatelessWidget {
           ),
         ),
       ],
+    ),
     );
   }
 }
