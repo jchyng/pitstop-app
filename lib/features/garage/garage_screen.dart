@@ -171,7 +171,12 @@ class _VehicleHero extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Text(vehicle.name, style: Theme.of(context).textTheme.titleLarge),
+            Flexible(
+              child: Text(vehicle.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleLarge),
+            ),
             const SizedBox(width: 6),
             const Icon(Icons.keyboard_arrow_down_rounded,
                 size: 18, color: AppColors.textTertiary),

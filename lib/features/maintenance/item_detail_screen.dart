@@ -301,22 +301,20 @@ class _StatusCard extends StatelessWidget {
                 fontFamily: AppText.fontFamily,
               )),
           const SizedBox(height: 6),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                remainText,
-                style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w500,
-                  color: remainColor,
-                  letterSpacing: -0.68,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                  fontFamily: AppText.fontFamily,
-                ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              remainText,
+              style: TextStyle(
+                fontSize: 34,
+                fontWeight: FontWeight.w500,
+                color: remainColor,
+                letterSpacing: -0.68,
+                fontFeatures: const [FontFeature.tabularFigures()],
+                fontFamily: AppText.fontFamily,
               ),
-            ],
+            ),
           ),
           const SizedBox(height: 16),
           // 게이지

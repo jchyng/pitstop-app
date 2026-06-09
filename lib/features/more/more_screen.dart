@@ -469,12 +469,18 @@ class _InfoRow extends StatelessWidget {
                   fontFamily: AppText.fontFamily,
                 )),
           ),
-          Text(value,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textPrimary,
-                fontFamily: AppText.fontFamily,
-              )),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textPrimary,
+                  fontFamily: AppText.fontFamily,
+                )),
+          ),
         ],
       ),
     );

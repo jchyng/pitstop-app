@@ -427,23 +427,21 @@ class _SummaryCard extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               )),
           const SizedBox(height: 6),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                '₩${fmtKrw(total)}',
-                style: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.72,
-                  fontFeatures: [FontFeature.tabularFigures()],
-                  fontFamily: AppText.fontFamily,
-                  height: 1.0,
-                ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '₩${fmtKrw(total)}',
+              style: const TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+                letterSpacing: -0.72,
+                fontFeatures: [FontFeature.tabularFigures()],
+                fontFamily: AppText.fontFamily,
+                height: 1.0,
               ),
-            ],
+            ),
           ),
           if (hasPrev) ...[
             const SizedBox(height: 8),
@@ -455,12 +453,16 @@ class _SummaryCard extends StatelessWidget {
                   color: diff > 0 ? AppColors.amber : AppColors.teal,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  '지난달 ₩${fmtKrw(prev)} · ${diff > 0 ? '+' : ''}$pct%',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                    fontFamily: AppText.fontFamily,
+                Flexible(
+                  child: Text(
+                    '지난달 ₩${fmtKrw(prev)} · ${diff > 0 ? '+' : ''}$pct%',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      fontFamily: AppText.fontFamily,
+                    ),
                   ),
                 ),
               ],
@@ -571,27 +573,34 @@ class _DonutCard extends StatelessWidget {
                     startDegreeOffset: -90,
                   ),
                 ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '₩${fmtKrw(total)}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textPrimary,
-                        fontFeatures: [FontFeature.tabularFigures()],
-                        fontFamily: AppText.fontFamily,
+                // 중앙 텍스트 — hole 직경(84px)에서 양쪽 4px 여백 확보
+                SizedBox(
+                  width: 76,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '₩${fmtKrw(total)}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textPrimary,
+                            fontFeatures: [FontFeature.tabularFigures()],
+                            fontFamily: AppText.fontFamily,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    const Text('총 지출',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textTertiary,
-                          fontFamily: AppText.fontFamily,
-                        )),
-                  ],
+                      const SizedBox(height: 2),
+                      const Text('총 지출',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textTertiary,
+                            fontFamily: AppText.fontFamily,
+                          )),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -602,9 +611,8 @@ class _DonutCard extends StatelessWidget {
             child: Column(
               children: visible.map((c) {
                 final amount = summary.byCategory[c.key]!;
-                final pct = (amount / total * 100).round();
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  padding: const EdgeInsets.symmetric(vertical: 5),
                   child: Row(
                     children: [
                       Container(
@@ -618,12 +626,15 @@ class _DonutCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(c.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 13,
                               color: AppColors.textSecondary,
                               fontFamily: AppText.fontFamily,
                             )),
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         fmtKrw(amount),
                         style: const TextStyle(
@@ -632,19 +643,6 @@ class _DonutCard extends StatelessWidget {
                           color: AppColors.textPrimary,
                           fontFeatures: [FontFeature.tabularFigures()],
                           fontFamily: AppText.fontFamily,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      SizedBox(
-                        width: 28,
-                        child: Text(
-                          '$pct%',
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textTertiary,
-                            fontFamily: AppText.fontFamily,
-                          ),
                         ),
                       ),
                     ],
