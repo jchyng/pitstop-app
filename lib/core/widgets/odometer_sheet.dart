@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import '../theme/tokens.dart';
+import '../utils/format.dart';
 
 /// 주행거리 업데이트 바텀시트.
 /// 현재값보다 낮은 값 입력 시 경고 다이얼로그를 표시한다.
@@ -50,7 +50,7 @@ class _OdometerSheetState extends State<OdometerSheet> {
           title: const Text('주행거리 줄어듦',
               style: TextStyle(color: AppColors.textPrimary)),
           content: Text(
-            '현재값(${_fmtKm(widget.current)} km)보다 낮습니다. 수정하시겠어요?',
+            '현재값(${fmtKm(widget.current)} km)보다 낮습니다. 수정하시겠어요?',
             style: const TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
@@ -134,7 +134,7 @@ class _OdometerSheetState extends State<OdometerSheet> {
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              '현재: ${_fmtKm(widget.current)} km',
+              '현재: ${fmtKm(widget.current)} km',
               style: const TextStyle(
                 fontSize: 13,
                 color: AppColors.textTertiary,
@@ -219,5 +219,3 @@ class _OdometerSheetState extends State<OdometerSheet> {
     );
   }
 }
-
-String _fmtKm(int km) => NumberFormat('#,##0').format(km);

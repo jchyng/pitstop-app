@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/utils/format.dart';
 import '../../providers.dart';
 import 'item_detail_screen.dart';
 
@@ -243,7 +243,7 @@ class _RecordRow extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '${_fmtKm(rec.odometer)} km',
+                        '${fmtKm(rec.odometer)} km',
                         style: const TextStyle(
                           fontSize: 13,
                           color: AppColors.textSecondary,
@@ -357,8 +357,6 @@ class _EmptyState extends StatelessWidget {
 }
 
 // ─── 유틸 ─────────────────────────────────────────────────────
-
-String _fmtKm(int km) => NumberFormat('#,##0').format(km);
 
 String _fmtDate(DateTime d) =>
     '${d.month.toString().padLeft(2, '0')}.${d.day.toString().padLeft(2, '0')}';

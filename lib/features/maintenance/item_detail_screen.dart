@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../core/db/database.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/utils/format.dart';
 import '../../domain/logic/remaining_life.dart';
 import '../../providers.dart';
 
@@ -338,7 +338,7 @@ class _StatusCard extends StatelessWidget {
                 child: _GridCell(
                   label: '마지막 교체',
                   value: spec.lastReplacedOdometer != null
-                      ? '${_fmtKm(spec.lastReplacedOdometer!)} km'
+                      ? '${fmtKm(spec.lastReplacedOdometer!)} km'
                       : '-',
                 ),
               ),
@@ -346,7 +346,7 @@ class _StatusCard extends StatelessWidget {
                 child: _GridCell(
                   label: '다음 교체 예정',
                   value: nextDueOdometer != null
-                      ? '${_fmtKm(nextDueOdometer)} km'
+                      ? '${fmtKm(nextDueOdometer)} km'
                       : '-',
                 ),
               ),
@@ -401,7 +401,7 @@ class _StatusCard extends StatelessWidget {
     }
     if (r.remainingKm != null) {
       final km = r.remainingKm!;
-      return km >= 0 ? '${_fmtKm(km)} km 남음' : '${_fmtKm(-km)} km 초과';
+      return km >= 0 ? '${fmtKm(km)} km 남음' : '${fmtKm(-km)} km 초과';
     }
     return '-';
   }
@@ -547,7 +547,7 @@ class _RecordTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${_fmtKm(record.odometer)} km · ${_typeLabel(record.type)}',
+                    '${fmtKm(record.odometer)} km · ${_typeLabel(record.type)}',
                     style: const TextStyle(
                       fontSize: 13,
                       color: AppColors.textSecondary,
@@ -1159,14 +1159,12 @@ class _SegmentControl extends StatelessWidget {
 
 // ─── 유틸 ─────────────────────────────────────────────────────
 
-String _fmtKm(int km) => NumberFormat('#,##0').format(km);
-
 String _fmtDate(DateTime d) =>
     '${d.year}.${d.month.toString().padLeft(2, '0')}.${d.day.toString().padLeft(2, '0')}';
 
 String _fmtInterval(int? km, int? months) {
   final parts = <String>[];
-  if (km != null) parts.add('${_fmtKm(km)} km');
+  if (km != null) parts.add('${fmtKm(km)} km');
   if (months != null) {
     parts.add(months % 12 == 0 ? '${months ~/ 12}년' : '$months개월');
   }

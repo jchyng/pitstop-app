@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../core/db/database.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/utils/format.dart';
 import '../../core/widgets/odometer_sheet.dart';
 import '../../domain/logic/remaining_life.dart';
 import '../../providers.dart';
@@ -252,7 +252,7 @@ class _OdometerCard extends StatelessWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: _fmtKm(vehicle.currentOdometer),
+                        text: fmtKm(vehicle.currentOdometer),
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w500,
@@ -507,6 +507,3 @@ class _PlaceholderCard extends StatelessWidget {
   }
 }
 
-// ─── 유틸 ─────────────────────────────────────────────────────
-
-String _fmtKm(int km) => NumberFormat('#,##0').format(km);

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/db/database.dart';
+import '../../core/utils/format.dart';
 import '../../core/widgets/odometer_sheet.dart';
 import '../../domain/logic/remaining_life.dart';
 import '../../providers.dart';
@@ -179,7 +179,7 @@ class _VehicleHero extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(_fmtKm(vehicle.currentOdometer), style: AppText.heroOdometer),
+              Text(fmtKm(vehicle.currentOdometer), style: AppText.heroOdometer),
               const SizedBox(width: 7),
               const Text('km',
                   style: TextStyle(
@@ -428,8 +428,8 @@ class _ItemStatusRow extends StatelessWidget {
     if (r.remainingKm != null) {
       final km = r.remainingKm!;
       return km >= 0
-          ? '${_fmtKm(km)} km 남음'
-          : '${_fmtKm(-km)} km 초과';
+          ? '${fmtKm(km)} km 남음'
+          : '${fmtKm(-km)} km 초과';
     }
 
     return '-';
@@ -494,6 +494,3 @@ class _AnimatedGaugeFill extends StatelessWidget {
   }
 }
 
-// ─── 유틸 ─────────────────────────────────────────────────────
-
-String _fmtKm(int km) => NumberFormat('#,##0').format(km);

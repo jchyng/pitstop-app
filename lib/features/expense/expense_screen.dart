@@ -2,9 +2,9 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../core/db/database.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/utils/format.dart';
 import '../../providers.dart';
 
 // ─── 카테고리 정의 ────────────────────────────────────────────
@@ -417,7 +417,7 @@ class _SummaryCard extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                '₩${_fmtKrw(total)}',
+                '₩${fmtKrw(total)}',
                 style: const TextStyle(
                   fontSize: 38,
                   fontWeight: FontWeight.w500,
@@ -441,7 +441,7 @@ class _SummaryCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '지난달 ₩${_fmtKrw(prev)} · ${diff > 0 ? '+' : ''}$pct%',
+                  '지난달 ₩${fmtKrw(prev)} · ${diff > 0 ? '+' : ''}$pct%',
                   style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
@@ -459,13 +459,13 @@ class _SummaryCard extends StatelessWidget {
               Expanded(
                 child: _MiniCell(
                   label: '이번 달 주행',
-                  value: km != null ? '${_fmtNum(km)} km' : '—',
+                  value: km != null ? '${fmtKrw(km)} km' : '—',
                 ),
               ),
               Expanded(
                 child: _MiniCell(
                   label: 'km당 유지비',
-                  value: perKm != null ? '₩${_fmtKrw(perKm)}' : '—',
+                  value: perKm != null ? '₩${fmtKrw(perKm)}' : '—',
                 ),
               ),
             ],
@@ -559,7 +559,7 @@ class _DonutCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '₩${_fmtKrw(total)}',
+                      '₩${fmtKrw(total)}',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -609,7 +609,7 @@ class _DonutCard extends StatelessWidget {
                             )),
                       ),
                       Text(
-                        _fmtKrw(amount),
+                        fmtKrw(amount),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -800,7 +800,7 @@ class _ExpenseRow extends StatelessWidget {
             const SizedBox(width: 12),
             // 금액
             Text(
-              '₩${_fmtKrw(expense.amount)}',
+              '₩${fmtKrw(expense.amount)}',
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
@@ -1293,9 +1293,6 @@ class _ErrorCard extends StatelessWidget {
 }
 
 // ─── 유틸 ─────────────────────────────────────────────────────
-
-String _fmtKrw(int amount) => NumberFormat('#,##0').format(amount);
-String _fmtNum(int n) => NumberFormat('#,##0').format(n);
 
 String _fmtDateShort(DateTime d) =>
     '${d.month.toString().padLeft(2, '0')}.${d.day.toString().padLeft(2, '0')}';
