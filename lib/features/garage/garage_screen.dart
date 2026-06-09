@@ -65,15 +65,18 @@ class _GarageBody extends ConsumerWidget {
                           fontFamily: AppText.fontFamily,
                           fontWeight: FontWeight.w500,
                         )),
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(
-                        color: AppColors.chip,
-                        shape: BoxShape.circle,
+                    GestureDetector(
+                      onTap: onNavigateToMore,
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: const BoxDecoration(
+                          color: AppColors.chip,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.settings_outlined,
+                            size: 18, color: AppColors.textSecondary),
                       ),
-                      child: const Icon(Icons.settings_outlined,
-                          size: 18, color: AppColors.textSecondary),
                     ),
                   ],
                 ),

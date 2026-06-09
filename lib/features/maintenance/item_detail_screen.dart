@@ -95,7 +95,10 @@ class _DetailBody extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const _NavBtn(icon: Icons.more_horiz_rounded),
+                  _NavBtn(
+                    icon: Icons.more_horiz_rounded,
+                    onTap: () => _showSpecInfo(context, spec),
+                  ),
                 ],
               ),
             ),
@@ -253,6 +256,15 @@ class _DetailBody extends ConsumerWidget {
                 _invalidate(ref);
               },
       ),
+    );
+  }
+
+  void _showSpecInfo(BuildContext context, ItemSpec spec) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _SpecInfoSheet(spec: spec),
     );
   }
 
@@ -1144,6 +1156,116 @@ class _SegmentControl extends StatelessWidget {
                     ),
                   ),
                 ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── 소모품 정보 바텀시트 ─────────────────────────────────────
+
+class _SpecInfoSheet extends StatelessWidget {
+  final ItemSpec spec;
+  const _SpecInfoSheet({required this.spec});
+
+  @override
+  Widget build(BuildContext context) {
+    final behaviorLabel = switch (spec.behavior) {
+      'replace_only' => '교체만',
+      'inspect_only' => '점검만',
+      'both' => '교체 · 점검',
+      _ => null,
+    };
+
+    final rows = <(String, String)>[
+      if (spec.note != null && spec.note!.isNotEmpty) ('참고사항', spec.note!),
+      if (spec.severeIntervalKm != null)
+        ('가혹 조건 주기', '${fmtKm(spec.severeIntervalKm!)} km'),
+      if (behaviorLabel != null) ('작업 유형', behaviorLabel),
+      ('카테고리', spec.category),
+    ];
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface2,
+        borderRadius: AppRadius.bottomSheet,
+      ),
+      padding: const EdgeInsets.fromLTRB(22, 14, 22, 36),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 그래버
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(40),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Text(spec.name,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+                fontFamily: AppText.fontFamily,
+              )),
+          const SizedBox(height: 20),
+          if (rows.isEmpty)
+            const Text('추가 정보 없음',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textTertiary,
+                  fontFamily: AppText.fontFamily,
+                ))
+          else
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: AppRadius.innerCard,
+                border: Border.all(color: AppColors.hairline),
+              ),
+              child: Column(
+                children: [
+                  for (var i = 0; i < rows.length; i++) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 100,
+                            child: Text(rows[i].$1,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textTertiary,
+                                  fontFamily: AppText.fontFamily,
+                                )),
+                          ),
+                          Expanded(
+                            child: Text(rows[i].$2,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textPrimary,
+                                  fontFamily: AppText.fontFamily,
+                                  height: 1.5,
+                                )),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (i < rows.length - 1)
+                      const Divider(height: 1, color: AppColors.hairline),
+                  ],
+                ],
               ),
             ),
         ],
