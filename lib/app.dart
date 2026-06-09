@@ -30,13 +30,18 @@ class MainShell extends ConsumerStatefulWidget {
 
 class _MainShellState extends ConsumerState<MainShell> {
   int _selectedIndex = 0;
+  late final List<Widget> _screens;
 
-  static const _screens = [
-    GarageScreen(),
-    MaintenanceScreen(),
-    ExpenseScreen(),
-    MoreScreen(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      GarageScreen(onNavigateToMore: () => setState(() => _selectedIndex = 3)),
+      const MaintenanceScreen(),
+      const ExpenseScreen(),
+      const MoreScreen(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

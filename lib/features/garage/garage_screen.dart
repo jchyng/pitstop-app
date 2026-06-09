@@ -9,7 +9,8 @@ import '../../providers.dart';
 import '../maintenance/item_detail_screen.dart';
 
 class GarageScreen extends ConsumerWidget {
-  const GarageScreen({super.key});
+  final VoidCallback? onNavigateToMore;
+  const GarageScreen({super.key, this.onNavigateToMore});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,7 +28,7 @@ class GarageScreen extends ConsumerWidget {
               style: const TextStyle(color: AppColors.textSecondary)),
         ),
       ),
-      data: (_) => const _GarageBody(),
+      data: (_) => _GarageBody(onNavigateToMore: onNavigateToMore),
     );
   }
 }
@@ -35,7 +36,8 @@ class GarageScreen extends ConsumerWidget {
 // ─── 본문 ────────────────────────────────────────────────────
 
 class _GarageBody extends ConsumerWidget {
-  const _GarageBody();
+  final VoidCallback? onNavigateToMore;
+  const _GarageBody({this.onNavigateToMore});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -89,17 +91,21 @@ class _GarageBody extends ConsumerWidget {
 
             // 소모품 현황 헤더
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screenPaddingH, 34, AppSpacing.screenPaddingH, 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('소모품 현황',
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const Icon(Icons.chevron_right_rounded,
-                        size: 18, color: AppColors.textTertiary),
-                  ],
+              child: GestureDetector(
+                onTap: onNavigateToMore,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.screenPaddingH, 34, AppSpacing.screenPaddingH, 6),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('소모품 현황',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const Icon(Icons.chevron_right_rounded,
+                          size: 18, color: AppColors.textTertiary),
+                    ],
+                  ),
                 ),
               ),
             ),
