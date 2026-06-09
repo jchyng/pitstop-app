@@ -374,7 +374,7 @@ class _StatusCard extends StatelessWidget {
                 child: _GridCell(
                   label: '마지막 교체일',
                   value: spec.lastReplacedDate != null
-                      ? _fmtDate(spec.lastReplacedDate!)
+                      ? fmtDateFull(spec.lastReplacedDate!)
                       : '-',
                 ),
               ),
@@ -547,7 +547,7 @@ class _RecordTile extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(_fmtDate(record.date), style: AppText.item),
+                      Text(fmtDateFull(record.date), style: AppText.item),
                       if (record.expenseId != null) // amount는 별도 로드 필요
                         const Icon(Icons.chevron_right_rounded,
                             size: 18, color: AppColors.textTertiary)
@@ -844,7 +844,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            _fmtDate(_date),
+                            fmtDateFull(_date),
                             style: const TextStyle(
                               fontSize: 15,
                               color: AppColors.textPrimary,
@@ -1175,8 +1175,6 @@ class _SegmentControl extends StatelessWidget {
 
 // ─── 유틸 ─────────────────────────────────────────────────────
 
-String _fmtDate(DateTime d) =>
-    '${d.year}.${d.month.toString().padLeft(2, '0')}.${d.day.toString().padLeft(2, '0')}';
 
 String _fmtInterval(int? km, int? months) {
   final parts = <String>[];

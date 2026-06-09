@@ -820,7 +820,7 @@ class _ExpenseRow extends StatelessWidget {
     if (expense.place != null && expense.place!.isNotEmpty) {
       parts.add(expense.place!);
     }
-    parts.add(_fmtDateShort(expense.date));
+    parts.add(fmtDateShort(expense.date));
     return parts.join(' · ');
   }
 }
@@ -1053,7 +1053,7 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(_fmtDateFull(_date),
+                          Text(fmtDateFull(_date),
                               style: const TextStyle(
                                 fontSize: 15,
                                 color: AppColors.textPrimary,
@@ -1292,10 +1292,3 @@ class _ErrorCard extends StatelessWidget {
   }
 }
 
-// ─── 유틸 ─────────────────────────────────────────────────────
-
-String _fmtDateShort(DateTime d) =>
-    '${d.month.toString().padLeft(2, '0')}.${d.day.toString().padLeft(2, '0')}';
-
-String _fmtDateFull(DateTime d) =>
-    '${d.year}.${d.month.toString().padLeft(2, '0')}.${d.day.toString().padLeft(2, '0')}';

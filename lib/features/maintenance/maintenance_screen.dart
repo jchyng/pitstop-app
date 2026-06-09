@@ -275,7 +275,7 @@ class _RecordRow extends StatelessWidget {
             // 날짜
             const SizedBox(width: 12),
             Text(
-              _fmtDate(rec.date),
+              fmtDateShort(rec.date),
               style: const TextStyle(
                 fontSize: 13,
                 color: AppColors.textTertiary,
@@ -358,5 +358,3 @@ class _EmptyState extends StatelessWidget {
 
 // ─── 유틸 ─────────────────────────────────────────────────────
 
-String _fmtDate(DateTime d) =>
-    '${d.month.toString().padLeft(2, '0')}.${d.day.toString().padLeft(2, '0')}';
