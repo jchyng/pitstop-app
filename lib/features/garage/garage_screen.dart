@@ -36,12 +36,19 @@ class GarageScreen extends ConsumerWidget {
 
 // ─── 본문 ────────────────────────────────────────────────────
 
-class _GarageBody extends ConsumerWidget {
+class _GarageBody extends ConsumerStatefulWidget {
   final VoidCallback? onNavigateToMore;
   const _GarageBody({this.onNavigateToMore});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_GarageBody> createState() => _GarageBodyState();
+}
+
+class _GarageBodyState extends ConsumerState<_GarageBody> {
+  bool _groupByCategory = false;
+
+  @override
+  Widget build(BuildContext context) {
     final vehiclesAsync = ref.watch(vehiclesProvider);
 
     return Scaffold(
@@ -66,7 +73,7 @@ class _GarageBody extends ConsumerWidget {
                           fontWeight: FontWeight.w500,
                         )),
                     GestureDetector(
-                      onTap: onNavigateToMore,
+                      onTap: widget.onNavigateToMore,
                       child: Container(
                         width: 36,
                         height: 36,
@@ -106,21 +113,65 @@ class _GarageBody extends ConsumerWidget {
 
             // 소모품 현황 헤더
             SliverToBoxAdapter(
-              child: GestureDetector(
-                onTap: onNavigateToMore,
-                behavior: HitTestBehavior.opaque,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.screenPaddingH, 28, AppSpacing.screenPaddingH, 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('소모품 현황',
-                          style: Theme.of(context).textTheme.titleMedium),
-                      const Icon(Icons.chevron_right_rounded,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.screenPaddingH, 28, AppSpacing.screenPaddingH, 8),
+                child: Row(
+                  children: [
+                    Text('소모품 현황',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    const Spacer(),
+                    // 카테고리 그룹 토글
+                    GestureDetector(
+                      onTap: () =>
+                          setState(() => _groupByCategory = !_groupByCategory),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: _groupByCategory
+                              ? AppColors.accentBg
+                              : AppColors.chip,
+                          borderRadius: AppRadius.chipShape,
+                          border: Border.all(
+                            color: _groupByCategory
+                                ? AppColors.accent
+                                : Colors.transparent,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.category_outlined,
+                                size: 12,
+                                color: _groupByCategory
+                                    ? AppColors.accent
+                                    : AppColors.textTertiary),
+                            const SizedBox(width: 4),
+                            Text(
+                              '카테고리',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: _groupByCategory
+                                    ? AppColors.accent
+                                    : AppColors.textTertiary,
+                                fontFamily: AppText.fontFamily,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    // 더보기 이동 버튼
+                    GestureDetector(
+                      onTap: widget.onNavigateToMore,
+                      child: const Icon(Icons.chevron_right_rounded,
                           size: 18, color: AppColors.textTertiary),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -132,7 +183,10 @@ class _GarageBody extends ConsumerWidget {
                 error: (_, _) => const SizedBox(),
                 data: (vehicles) => vehicles.isEmpty
                     ? const SizedBox()
-                    : _ItemStatusCard(vehicleId: vehicles.first.id),
+                    : _ItemStatusCard(
+                        vehicleId: vehicles.first.id,
+                        groupByCategory: _groupByCategory,
+                      ),
               ),
             ),
 
@@ -264,7 +318,11 @@ class _VehicleHero extends ConsumerWidget {
 
 class _ItemStatusCard extends ConsumerWidget {
   final int vehicleId;
-  const _ItemStatusCard({required this.vehicleId});
+  final bool groupByCategory;
+  const _ItemStatusCard({
+    required this.vehicleId,
+    this.groupByCategory = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -290,36 +348,114 @@ class _ItemStatusCard extends ConsumerWidget {
             child: Text('오류: $e',
                 style: const TextStyle(color: AppColors.textSecondary)),
           ),
-          data: (entries) => Column(
-            children: [
-              for (var i = 0; i < entries.length; i++) ...[
-                _ItemStatusRow(
-                  spec: entries[i].spec,
-                  result: entries[i].result,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ItemDetailScreen(
-                        specId: entries[i].spec.id,
-                        vehicleId: vehicleId,
-                      ),
-                    ),
-                  ),
-                  onQuickAdd: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ItemDetailScreen(
-                        specId: entries[i].spec.id,
-                        vehicleId: vehicleId,
-                        autoOpenForm: true,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
+          data: (entries) => groupByCategory
+              ? _buildCategoryGroups(context, entries)
+              : _buildFlatList(context, entries),
         ),
       ),
     );
+  }
+
+  Widget _buildFlatList(
+      BuildContext context, List<ItemStatusEntry> entries) {
+    return Column(
+      children: [
+        for (var i = 0; i < entries.length; i++) ...[
+          _ItemStatusRow(
+            spec: entries[i].spec,
+            result: entries[i].result,
+            onTap: () => _pushDetail(context, entries[i].spec.id),
+            onQuickAdd: () => _pushDetailWithForm(context, entries[i].spec.id),
+          ),
+          if (i < entries.length - 1)
+            const Divider(
+                height: 1,
+                indent: AppSpacing.cardPaddingH,
+                color: AppColors.hairline),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCategoryGroups(
+      BuildContext context, List<ItemStatusEntry> entries) {
+    // 카테고리 기준으로 그룹핑 (상태 순서는 유지)
+    final grouped = <String, List<ItemStatusEntry>>{};
+    for (final e in entries) {
+      grouped.putIfAbsent(e.spec.category, () => []).add(e);
+    }
+    final categories = grouped.keys.toList()..sort();
+
+    final children = <Widget>[];
+    for (var ci = 0; ci < categories.length; ci++) {
+      final cat = categories[ci];
+      final group = grouped[cat]!;
+
+      // 카테고리 헤더
+      children.add(Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.cardPaddingH,
+          ci == 0 ? 14 : 10,
+          AppSpacing.cardPaddingH,
+          6,
+        ),
+        child: Row(
+          children: [
+            Text(
+              cat,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textTertiary,
+                fontFamily: AppText.fontFamily,
+                letterSpacing: 0.02,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+                child: Container(height: 1, color: AppColors.hairline)),
+          ],
+        ),
+      ));
+
+      for (var i = 0; i < group.length; i++) {
+        children.add(_ItemStatusRow(
+          spec: group[i].spec,
+          result: group[i].result,
+          onTap: () => _pushDetail(context, group[i].spec.id),
+          onQuickAdd: () =>
+              _pushDetailWithForm(context, group[i].spec.id),
+        ));
+        if (i < group.length - 1) {
+          children.add(const Divider(
+              height: 1,
+              indent: AppSpacing.cardPaddingH,
+              color: AppColors.hairline));
+        }
+      }
+    }
+
+    // 마지막 카테고리 아래 여백
+    children.add(const SizedBox(height: 8));
+
+    return Column(children: children);
+  }
+
+  void _pushDetail(BuildContext context, int specId) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) =>
+          ItemDetailScreen(specId: specId, vehicleId: vehicleId),
+    ));
+  }
+
+  void _pushDetailWithForm(BuildContext context, int specId) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => ItemDetailScreen(
+        specId: specId,
+        vehicleId: vehicleId,
+        autoOpenForm: true,
+      ),
+    ));
   }
 }
 
