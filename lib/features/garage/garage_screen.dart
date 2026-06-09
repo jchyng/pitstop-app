@@ -468,6 +468,7 @@ class _AnimatedGaugeFill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
+      key: ValueKey(ratio),
       tween: Tween(begin: 0, end: ratio),
       duration: const Duration(milliseconds: 900),
       curve: Curves.easeOutCubic,
