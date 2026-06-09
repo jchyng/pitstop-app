@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../providers.dart';
 import 'item_detail_screen.dart';
 
@@ -24,7 +25,10 @@ class MaintenanceScreen extends ConsumerWidget {
                 style: const TextStyle(color: AppColors.textSecondary)),
           ),
           data: (vehicles) => vehicles.isEmpty
-              ? const _EmptyState()
+              ? const EmptyState(
+                  icon: Icons.directions_car_outlined,
+                  title: '차량을 먼저 등록해주세요',
+                )
               : _HistoryBody(vehicleId: vehicles.first.id),
         ),
       ),
@@ -70,7 +74,16 @@ class _HistoryBody extends ConsumerWidget {
             ),
           ),
           data: (entries) => entries.isEmpty
-              ? const SliverToBoxAdapter(child: _EmptyRecords())
+              ? const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 80),
+                    child: EmptyState(
+                      icon: Icons.history_rounded,
+                      title: '정비 기록이 없습니다',
+                      description: '홈 화면에서 소모품을 탭해 첫 기록을 추가해보세요',
+                    ),
+                  ),
+                )
               : _RecordSliver(entries: entries, vehicleId: vehicleId),
         ),
 
@@ -314,46 +327,6 @@ class _RecordRow extends StatelessWidget {
             type
           ),
       };
-}
-
-// ─── 빈 상태 ──────────────────────────────────────────────────
-
-class _EmptyRecords extends StatelessWidget {
-  const _EmptyRecords();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.only(top: 100),
-      child: Center(
-        child: Column(
-          children: [
-            Icon(Icons.history_rounded, size: 48, color: AppColors.textTertiary),
-            SizedBox(height: 16),
-            Text('정비 기록이 없습니다',
-                style: TextStyle(
-                    fontSize: 15, color: AppColors.textSecondary)),
-            SizedBox(height: 6),
-            Text('홈 화면에서 소모품을 탭해 첫 기록을 추가해보세요',
-                style: TextStyle(
-                    fontSize: 13, color: AppColors.textTertiary)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('차량을 먼저 등록해주세요',
-          style: TextStyle(color: AppColors.textSecondary)),
-    );
-  }
 }
 
 // ─── 유틸 ─────────────────────────────────────────────────────

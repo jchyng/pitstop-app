@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/database.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/odometer_sheet.dart';
 import '../../domain/logic/remaining_life.dart';
 import '../../providers.dart';
@@ -26,7 +27,10 @@ class MoreScreen extends ConsumerWidget {
                 style: const TextStyle(color: AppColors.textSecondary)),
           ),
           data: (vehicles) => vehicles.isEmpty
-              ? const _NoVehicle()
+              ? const EmptyState(
+                  icon: Icons.directions_car_outlined,
+                  title: '차량을 먼저 등록해주세요',
+                )
               : _MoreBody(vehicle: vehicles.first),
         ),
       ),
@@ -472,20 +476,6 @@ class _InfoRow extends StatelessWidget {
               )),
         ],
       ),
-    );
-  }
-}
-
-// ─── 빈 상태 ──────────────────────────────────────────────────
-
-class _NoVehicle extends StatelessWidget {
-  const _NoVehicle();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('차량을 먼저 등록해주세요',
-          style: TextStyle(color: AppColors.textSecondary)),
     );
   }
 }

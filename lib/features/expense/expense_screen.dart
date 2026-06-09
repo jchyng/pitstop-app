@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/database.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../providers.dart';
 
 // ─── 카테고리 정의 ────────────────────────────────────────────
@@ -254,7 +255,20 @@ class _ExpenseBody extends ConsumerWidget {
                   loading: () => const _CardShimmer(height: 200),
                   error: (e, _) => _ErrorCard(message: '$e'),
                   data: (list) => list.isEmpty
-                      ? const _EmptyExpenses()
+                      ? Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 48),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: AppRadius.card,
+                            border: Border.all(color: AppColors.hairline),
+                          ),
+                          child: const EmptyState(
+                            icon: Icons.account_balance_wallet_outlined,
+                            title: '이번 달 지출 내역이 없습니다',
+                            description: '+ 버튼을 눌러 지출을 추가해보세요',
+                          ),
+                        )
                       : _ExpenseListCard(
                           expenses: list,
                           onDelete: (id) async {
@@ -822,39 +836,6 @@ class _ExpenseRow extends StatelessWidget {
     }
     parts.add(fmtDateShort(expense.date));
     return parts.join(' · ');
-  }
-}
-
-// ─── 빈 상태 ──────────────────────────────────────────────────
-
-class _EmptyExpenses extends StatelessWidget {
-  const _EmptyExpenses();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 48),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: AppRadius.card,
-        border: Border.all(color: AppColors.hairline),
-      ),
-      child: const Column(
-        children: [
-          Icon(Icons.account_balance_wallet_outlined,
-              size: 40, color: AppColors.textTertiary),
-          SizedBox(height: 12),
-          Text('이번 달 지출 내역이 없습니다',
-              style: TextStyle(
-                  fontSize: 14, color: AppColors.textSecondary)),
-          SizedBox(height: 4),
-          Text('+ 버튼을 눌러 지출을 추가해보세요',
-              style: TextStyle(
-                  fontSize: 13, color: AppColors.textTertiary)),
-        ],
-      ),
-    );
   }
 }
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/db/database.dart';
 import '../../core/utils/format.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/odometer_sheet.dart';
 import '../../domain/logic/remaining_life.dart';
 import '../../providers.dart';
@@ -84,7 +85,17 @@ class _GarageBody extends ConsumerWidget {
                 loading: () => const SizedBox(height: 120),
                 error: (_, _) => const SizedBox(height: 120),
                 data: (vehicles) => vehicles.isEmpty
-                    ? _EmptyVehicle()
+                    ? const Padding(
+                        padding: EdgeInsets.fromLTRB(
+                            AppSpacing.screenPaddingH, 32,
+                            AppSpacing.screenPaddingH, 0),
+                        child: EmptyState(
+                          icon: Icons.directions_car_outlined,
+                          title: '차량을 등록해주세요',
+                          description:
+                              '카탈로그에서 내 차량을 선택하면\n소모품 현황이 자동으로 설정됩니다.',
+                        ),
+                      )
                     : _VehicleHero(vehicle: vehicles.first),
               ),
             ),
@@ -236,23 +247,6 @@ class _VehicleHero extends ConsumerWidget {
           ref.invalidate(sortedItemStatusProvider(vehicle.id));
         },
       ),
-    );
-  }
-}
-
-class _EmptyVehicle extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-          AppSpacing.screenPaddingH, 32, AppSpacing.screenPaddingH, 0),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('차량을 등록해주세요',
-            style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 8),
-        Text('카탈로그에서 내 차량을 선택하면\n소모품 현황이 자동으로 설정됩니다.',
-            style: Theme.of(context).textTheme.bodyMedium),
-      ]),
     );
   }
 }

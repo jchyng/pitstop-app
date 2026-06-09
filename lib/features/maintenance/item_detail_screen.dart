@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/database.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../domain/logic/remaining_life.dart';
 import '../../providers.dart';
 
@@ -157,7 +158,14 @@ class _DetailBody extends ConsumerWidget {
                     ),
                     data: (records) => records.isEmpty
                         ? const SliverToBoxAdapter(
-                            child: _EmptyRecords(),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 48),
+                              child: EmptyState(
+                                icon: Icons.history_rounded,
+                                title: '교체 기록이 없습니다',
+                                description: '+ 추가를 눌러 첫 기록을 남겨보세요',
+                              ),
+                            ),
                           )
                         : SliverPadding(
                             padding: const EdgeInsets.fromLTRB(
@@ -445,33 +453,6 @@ class _GridCell extends StatelessWidget {
   }
 }
 
-// ─── 이력 없음 안내 ───────────────────────────────────────────
-
-class _EmptyRecords extends StatelessWidget {
-  const _EmptyRecords();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48),
-      child: Center(
-        child: Column(
-          children: [
-            Icon(Icons.history_rounded, size: 40, color: AppColors.textTertiary),
-            const SizedBox(height: 12),
-            const Text('교체 기록이 없습니다',
-                style: TextStyle(
-                    fontSize: 14, color: AppColors.textSecondary)),
-            const SizedBox(height: 4),
-            const Text('+ 추가를 눌러 첫 기록을 남겨보세요',
-                style: TextStyle(
-                    fontSize: 13, color: AppColors.textTertiary)),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ─── 타임라인 이력 행 ──────────────────────────────────────────
 
