@@ -92,21 +92,36 @@ class AppDatabase extends _$AppDatabase {
         .get();
   }
 
-  /// 해당 월에 기록된 정비이력 odometer 의 max - min. 기록 2개 미만이면 null.
+  /// 이번 달 최대 odometer - 이번 달 이전 마지막 odometer.
+  /// 기록이 1개라도 있으면 계산 가능. 이전 달 기록이 없으면 null.
   Future<int?> getMonthKmDelta(
       int vehicleId, int year, int month) async {
     final start = DateTime(year, month);
     final end = DateTime(year, month + 1);
-    final rows = await (select(maintenanceRecords)
+
+    // 이번 달 기록 중 최대 odometer
+    final thisMonth = await (select(maintenanceRecords)
           ..where((r) =>
               r.vehicleId.equals(vehicleId) &
               r.date.isBiggerOrEqualValue(start) &
               r.date.isSmallerThanValue(end)))
         .get();
-    if (rows.length < 2) return null;
-    final odos = rows.map((r) => r.odometer);
-    return odos.reduce((a, b) => a > b ? a : b) -
-        odos.reduce((a, b) => a < b ? a : b);
+    if (thisMonth.isEmpty) return null;
+    final maxThis =
+        thisMonth.map((r) => r.odometer).reduce((a, b) => a > b ? a : b);
+
+    // 이번 달 이전 기록 중 최대 odometer (달 시작 시점 기준)
+    final prevRecords = await (select(maintenanceRecords)
+          ..where((r) =>
+              r.vehicleId.equals(vehicleId) &
+              r.date.isSmallerThanValue(start))
+          ..orderBy([(r) => OrderingTerm.desc(r.odometer)])
+          ..limit(1))
+        .get();
+    if (prevRecords.isEmpty) return null;
+
+    final delta = maxThis - prevRecords.first.odometer;
+    return delta > 0 ? delta : null;
   }
 
   Future<void> updateVehicleOdometer(int vehicleId, int km) async {
