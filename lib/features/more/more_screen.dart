@@ -105,6 +105,16 @@ class _MoreBody extends ConsumerWidget {
           ),
         ),
 
+        // 소모품 관리
+        _SectionHeader('소모품 관리'),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenPaddingH, 0, AppSpacing.screenPaddingH, 0),
+            child: _SpecManageCard(vehicleId: vehicle.id),
+          ),
+        ),
+
         // 주유비 자동 감지
         _SectionHeader('주유비 자동 감지'),
         SliverToBoxAdapter(
@@ -532,6 +542,131 @@ class _InfoRow extends StatelessWidget {
                   color: AppColors.textPrimary,
                   fontFamily: AppText.fontFamily,
                 )),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── 소모품 관리 카드 ─────────────────────────────────────────
+
+class _SpecManageCard extends ConsumerWidget {
+  final int vehicleId;
+  const _SpecManageCard({required this.vehicleId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final specsAsync = ref.watch(allItemSpecsProvider(vehicleId));
+
+    return specsAsync.when(
+      loading: () => const _PlaceholderCard(height: 80),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (specs) {
+        if (specs.isEmpty) return const SizedBox.shrink();
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: AppRadius.card,
+            border: Border.all(color: AppColors.hairline),
+          ),
+          child: Column(
+            children: [
+              for (int i = 0; i < specs.length; i++) ...[
+                _SpecToggleRow(
+                  spec: specs[i],
+                  onToggle: (hidden) async {
+                    await ref
+                        .read(appDatabaseProvider)
+                        .toggleSpecHidden(specs[i].id, hidden: hidden);
+                    ref.invalidate(allItemSpecsProvider(vehicleId));
+                    ref.invalidate(sortedItemStatusProvider(vehicleId));
+                  },
+                ),
+                if (i < specs.length - 1)
+                  const Divider(
+                      height: 1, indent: 52, color: AppColors.hairline),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SpecToggleRow extends StatelessWidget {
+  final ItemSpec spec;
+  final void Function(bool hidden) onToggle;
+  const _SpecToggleRow({required this.spec, required this.onToggle});
+
+  static Color _dotColor(String category) => switch (category) {
+        '엔진·오일' => AppColors.amber,
+        '연료·증발가스' => AppColors.teal,
+        '공조·외부' => Color(0xFF6B8AFF),
+        '제동·냉각·변속' => AppColors.red,
+        '점화·벨트' => Color(0xFF9B59B6),
+        '타이어·배터리' => Color(0xFF2ECC71),
+        _ => AppColors.textTertiary,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final active = !spec.isHidden;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.cardPaddingH, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: active
+                  ? _dotColor(spec.category)
+                  : AppColors.textTertiary.withAlpha(80),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  spec.name,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: active
+                        ? AppColors.textPrimary
+                        : AppColors.textTertiary,
+                    fontFamily: AppText.fontFamily,
+                  ),
+                ),
+                Text(
+                  spec.category,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textTertiary,
+                    fontFamily: AppText.fontFamily,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: active,
+            onChanged: (on) => onToggle(!on),
+            activeThumbColor: Colors.white,
+            inactiveThumbColor: Colors.white,
+            trackOutlineColor:
+                WidgetStateProperty.all(Colors.transparent),
+            trackColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
+                return AppColors.accent;
+              }
+              return AppColors.chip;
+            }),
           ),
         ],
       ),

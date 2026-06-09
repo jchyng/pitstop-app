@@ -853,7 +853,7 @@ class _MaintenanceRecordsProviderElement
   int get specId => (origin as MaintenanceRecordsProvider).specId;
 }
 
-String _$sortedItemStatusHash() => r'620ae263031a8c0b0cd5d90018833995e8d9c4e4';
+String _$sortedItemStatusHash() => r'a6bcb5f582b7a7f27935202d28ec52d88dbf450f';
 
 /// 소모품 남은 수명 계산 결과, ratio 오름차순 정렬(unknown 맨 끝).
 ///
@@ -986,6 +986,138 @@ class _SortedItemStatusProviderElement
 
   @override
   int get vehicleId => (origin as SortedItemStatusProvider).vehicleId;
+}
+
+String _$allItemSpecsHash() => r'69a160e3ea3b95edc90d2760256acee9db65e92a';
+
+/// 관리 화면용: 숨긴 항목 포함 전체 스펙 목록.
+///
+/// Copied from [allItemSpecs].
+@ProviderFor(allItemSpecs)
+const allItemSpecsProvider = AllItemSpecsFamily();
+
+/// 관리 화면용: 숨긴 항목 포함 전체 스펙 목록.
+///
+/// Copied from [allItemSpecs].
+class AllItemSpecsFamily extends Family<AsyncValue<List<ItemSpec>>> {
+  /// 관리 화면용: 숨긴 항목 포함 전체 스펙 목록.
+  ///
+  /// Copied from [allItemSpecs].
+  const AllItemSpecsFamily();
+
+  /// 관리 화면용: 숨긴 항목 포함 전체 스펙 목록.
+  ///
+  /// Copied from [allItemSpecs].
+  AllItemSpecsProvider call(int vehicleId) {
+    return AllItemSpecsProvider(vehicleId);
+  }
+
+  @override
+  AllItemSpecsProvider getProviderOverride(
+    covariant AllItemSpecsProvider provider,
+  ) {
+    return call(provider.vehicleId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'allItemSpecsProvider';
+}
+
+/// 관리 화면용: 숨긴 항목 포함 전체 스펙 목록.
+///
+/// Copied from [allItemSpecs].
+class AllItemSpecsProvider extends AutoDisposeFutureProvider<List<ItemSpec>> {
+  /// 관리 화면용: 숨긴 항목 포함 전체 스펙 목록.
+  ///
+  /// Copied from [allItemSpecs].
+  AllItemSpecsProvider(int vehicleId)
+    : this._internal(
+        (ref) => allItemSpecs(ref as AllItemSpecsRef, vehicleId),
+        from: allItemSpecsProvider,
+        name: r'allItemSpecsProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$allItemSpecsHash,
+        dependencies: AllItemSpecsFamily._dependencies,
+        allTransitiveDependencies:
+            AllItemSpecsFamily._allTransitiveDependencies,
+        vehicleId: vehicleId,
+      );
+
+  AllItemSpecsProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.vehicleId,
+  }) : super.internal();
+
+  final int vehicleId;
+
+  @override
+  Override overrideWith(
+    FutureOr<List<ItemSpec>> Function(AllItemSpecsRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: AllItemSpecsProvider._internal(
+        (ref) => create(ref as AllItemSpecsRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        vehicleId: vehicleId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<List<ItemSpec>> createElement() {
+    return _AllItemSpecsProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AllItemSpecsProvider && other.vehicleId == vehicleId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, vehicleId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin AllItemSpecsRef on AutoDisposeFutureProviderRef<List<ItemSpec>> {
+  /// The parameter `vehicleId` of this provider.
+  int get vehicleId;
+}
+
+class _AllItemSpecsProviderElement
+    extends AutoDisposeFutureProviderElement<List<ItemSpec>>
+    with AllItemSpecsRef {
+  _AllItemSpecsProviderElement(super.provider);
+
+  @override
+  int get vehicleId => (origin as AllItemSpecsProvider).vehicleId;
 }
 
 String _$scheduleNotificationsHash() =>

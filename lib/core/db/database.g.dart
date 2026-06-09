@@ -582,6 +582,21 @@ class $ItemSpecsTable extends ItemSpecs
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _isHiddenMeta = const VerificationMeta(
+    'isHidden',
+  );
+  @override
+  late final GeneratedColumn<bool> isHidden = GeneratedColumn<bool>(
+    'is_hidden',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_hidden" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -596,6 +611,7 @@ class $ItemSpecsTable extends ItemSpecs
     behavior,
     lastReplacedOdometer,
     lastReplacedDate,
+    isHidden,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -698,6 +714,12 @@ class $ItemSpecsTable extends ItemSpecs
         ),
       );
     }
+    if (data.containsKey('is_hidden')) {
+      context.handle(
+        _isHiddenMeta,
+        isHidden.isAcceptableOrUnknown(data['is_hidden']!, _isHiddenMeta),
+      );
+    }
     return context;
   }
 
@@ -755,6 +777,10 @@ class $ItemSpecsTable extends ItemSpecs
         DriftSqlType.dateTime,
         data['${effectivePrefix}last_replaced_date'],
       ),
+      isHidden: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_hidden'],
+      )!,
     );
   }
 
@@ -777,6 +803,7 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
   final String? behavior;
   final int? lastReplacedOdometer;
   final DateTime? lastReplacedDate;
+  final bool isHidden;
   const ItemSpec({
     required this.id,
     required this.vehicleId,
@@ -790,6 +817,7 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
     this.behavior,
     this.lastReplacedOdometer,
     this.lastReplacedDate,
+    required this.isHidden,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -820,6 +848,7 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
     if (!nullToAbsent || lastReplacedDate != null) {
       map['last_replaced_date'] = Variable<DateTime>(lastReplacedDate);
     }
+    map['is_hidden'] = Variable<bool>(isHidden);
     return map;
   }
 
@@ -849,6 +878,7 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
       lastReplacedDate: lastReplacedDate == null && nullToAbsent
           ? const Value.absent()
           : Value(lastReplacedDate),
+      isHidden: Value(isHidden),
     );
   }
 
@@ -874,6 +904,7 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
       lastReplacedDate: serializer.fromJson<DateTime?>(
         json['lastReplacedDate'],
       ),
+      isHidden: serializer.fromJson<bool>(json['isHidden']),
     );
   }
   @override
@@ -892,6 +923,7 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
       'behavior': serializer.toJson<String?>(behavior),
       'lastReplacedOdometer': serializer.toJson<int?>(lastReplacedOdometer),
       'lastReplacedDate': serializer.toJson<DateTime?>(lastReplacedDate),
+      'isHidden': serializer.toJson<bool>(isHidden),
     };
   }
 
@@ -908,6 +940,7 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
     Value<String?> behavior = const Value.absent(),
     Value<int?> lastReplacedOdometer = const Value.absent(),
     Value<DateTime?> lastReplacedDate = const Value.absent(),
+    bool? isHidden,
   }) => ItemSpec(
     id: id ?? this.id,
     vehicleId: vehicleId ?? this.vehicleId,
@@ -929,6 +962,7 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
     lastReplacedDate: lastReplacedDate.present
         ? lastReplacedDate.value
         : this.lastReplacedDate,
+    isHidden: isHidden ?? this.isHidden,
   );
   ItemSpec copyWithCompanion(ItemSpecsCompanion data) {
     return ItemSpec(
@@ -954,6 +988,7 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
       lastReplacedDate: data.lastReplacedDate.present
           ? data.lastReplacedDate.value
           : this.lastReplacedDate,
+      isHidden: data.isHidden.present ? data.isHidden.value : this.isHidden,
     );
   }
 
@@ -971,7 +1006,8 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
           ..write('note: $note, ')
           ..write('behavior: $behavior, ')
           ..write('lastReplacedOdometer: $lastReplacedOdometer, ')
-          ..write('lastReplacedDate: $lastReplacedDate')
+          ..write('lastReplacedDate: $lastReplacedDate, ')
+          ..write('isHidden: $isHidden')
           ..write(')'))
         .toString();
   }
@@ -990,6 +1026,7 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
     behavior,
     lastReplacedOdometer,
     lastReplacedDate,
+    isHidden,
   );
   @override
   bool operator ==(Object other) =>
@@ -1006,7 +1043,8 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
           other.note == this.note &&
           other.behavior == this.behavior &&
           other.lastReplacedOdometer == this.lastReplacedOdometer &&
-          other.lastReplacedDate == this.lastReplacedDate);
+          other.lastReplacedDate == this.lastReplacedDate &&
+          other.isHidden == this.isHidden);
 }
 
 class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
@@ -1022,6 +1060,7 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
   final Value<String?> behavior;
   final Value<int?> lastReplacedOdometer;
   final Value<DateTime?> lastReplacedDate;
+  final Value<bool> isHidden;
   const ItemSpecsCompanion({
     this.id = const Value.absent(),
     this.vehicleId = const Value.absent(),
@@ -1035,6 +1074,7 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
     this.behavior = const Value.absent(),
     this.lastReplacedOdometer = const Value.absent(),
     this.lastReplacedDate = const Value.absent(),
+    this.isHidden = const Value.absent(),
   });
   ItemSpecsCompanion.insert({
     this.id = const Value.absent(),
@@ -1049,6 +1089,7 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
     this.behavior = const Value.absent(),
     this.lastReplacedOdometer = const Value.absent(),
     this.lastReplacedDate = const Value.absent(),
+    this.isHidden = const Value.absent(),
   }) : vehicleId = Value(vehicleId),
        key = Value(key),
        name = Value(name),
@@ -1066,6 +1107,7 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
     Expression<String>? behavior,
     Expression<int>? lastReplacedOdometer,
     Expression<DateTime>? lastReplacedDate,
+    Expression<bool>? isHidden,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1081,6 +1123,7 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
       if (lastReplacedOdometer != null)
         'last_replaced_odometer': lastReplacedOdometer,
       if (lastReplacedDate != null) 'last_replaced_date': lastReplacedDate,
+      if (isHidden != null) 'is_hidden': isHidden,
     });
   }
 
@@ -1097,6 +1140,7 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
     Value<String?>? behavior,
     Value<int?>? lastReplacedOdometer,
     Value<DateTime?>? lastReplacedDate,
+    Value<bool>? isHidden,
   }) {
     return ItemSpecsCompanion(
       id: id ?? this.id,
@@ -1111,6 +1155,7 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
       behavior: behavior ?? this.behavior,
       lastReplacedOdometer: lastReplacedOdometer ?? this.lastReplacedOdometer,
       lastReplacedDate: lastReplacedDate ?? this.lastReplacedDate,
+      isHidden: isHidden ?? this.isHidden,
     );
   }
 
@@ -1153,6 +1198,9 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
     if (lastReplacedDate.present) {
       map['last_replaced_date'] = Variable<DateTime>(lastReplacedDate.value);
     }
+    if (isHidden.present) {
+      map['is_hidden'] = Variable<bool>(isHidden.value);
+    }
     return map;
   }
 
@@ -1170,7 +1218,8 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
           ..write('note: $note, ')
           ..write('behavior: $behavior, ')
           ..write('lastReplacedOdometer: $lastReplacedOdometer, ')
-          ..write('lastReplacedDate: $lastReplacedDate')
+          ..write('lastReplacedDate: $lastReplacedDate, ')
+          ..write('isHidden: $isHidden')
           ..write(')'))
         .toString();
   }
@@ -2947,6 +2996,7 @@ typedef $$ItemSpecsTableCreateCompanionBuilder =
       Value<String?> behavior,
       Value<int?> lastReplacedOdometer,
       Value<DateTime?> lastReplacedDate,
+      Value<bool> isHidden,
     });
 typedef $$ItemSpecsTableUpdateCompanionBuilder =
     ItemSpecsCompanion Function({
@@ -2962,6 +3012,7 @@ typedef $$ItemSpecsTableUpdateCompanionBuilder =
       Value<String?> behavior,
       Value<int?> lastReplacedOdometer,
       Value<DateTime?> lastReplacedDate,
+      Value<bool> isHidden,
     });
 
 final class $$ItemSpecsTableReferences
@@ -3073,6 +3124,11 @@ class $$ItemSpecsTableFilterComposer
 
   ColumnFilters<DateTime> get lastReplacedDate => $composableBuilder(
     column: $table.lastReplacedDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isHidden => $composableBuilder(
+    column: $table.isHidden,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3189,6 +3245,11 @@ class $$ItemSpecsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isHidden => $composableBuilder(
+    column: $table.isHidden,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$VehiclesTableOrderingComposer get vehicleId {
     final $$VehiclesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -3264,6 +3325,9 @@ class $$ItemSpecsTableAnnotationComposer
     column: $table.lastReplacedDate,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get isHidden =>
+      $composableBuilder(column: $table.isHidden, builder: (column) => column);
 
   $$VehiclesTableAnnotationComposer get vehicleId {
     final $$VehiclesTableAnnotationComposer composer = $composerBuilder(
@@ -3355,6 +3419,7 @@ class $$ItemSpecsTableTableManager
                 Value<String?> behavior = const Value.absent(),
                 Value<int?> lastReplacedOdometer = const Value.absent(),
                 Value<DateTime?> lastReplacedDate = const Value.absent(),
+                Value<bool> isHidden = const Value.absent(),
               }) => ItemSpecsCompanion(
                 id: id,
                 vehicleId: vehicleId,
@@ -3368,6 +3433,7 @@ class $$ItemSpecsTableTableManager
                 behavior: behavior,
                 lastReplacedOdometer: lastReplacedOdometer,
                 lastReplacedDate: lastReplacedDate,
+                isHidden: isHidden,
               ),
           createCompanionCallback:
               ({
@@ -3383,6 +3449,7 @@ class $$ItemSpecsTableTableManager
                 Value<String?> behavior = const Value.absent(),
                 Value<int?> lastReplacedOdometer = const Value.absent(),
                 Value<DateTime?> lastReplacedDate = const Value.absent(),
+                Value<bool> isHidden = const Value.absent(),
               }) => ItemSpecsCompanion.insert(
                 id: id,
                 vehicleId: vehicleId,
@@ -3396,6 +3463,7 @@ class $$ItemSpecsTableTableManager
                 behavior: behavior,
                 lastReplacedOdometer: lastReplacedOdometer,
                 lastReplacedDate: lastReplacedDate,
+                isHidden: isHidden,
               ),
           withReferenceMapper: (p0) => p0
               .map(

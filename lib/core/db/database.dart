@@ -29,6 +29,8 @@ class ItemSpecs extends Table {
   TextColumn get behavior => text().nullable()(); // replace_only / inspect_only / both
   IntColumn get lastReplacedOdometer => integer().nullable()();
   DateTimeColumn get lastReplacedDate => dateTime().nullable()();
+  BoolColumn get isHidden =>
+      boolean().withDefault(const Constant(false))();
 }
 
 class MaintenanceRecords extends Table {
@@ -69,7 +71,16 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(itemSpecs, itemSpecs.isHidden);
+      }
+    },
+  );
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'pitstop_db');
@@ -132,6 +143,20 @@ class AppDatabase extends _$AppDatabase {
   Future<void> updateVehicleName(int vehicleId, String name) async {
     await (update(vehicles)..where((v) => v.id.equals(vehicleId)))
         .write(VehiclesCompanion(name: Value(name)));
+  }
+
+  Future<List<ItemSpec>> getAllItemSpecs(int vehicleId) =>
+      (select(itemSpecs)..where((s) => s.vehicleId.equals(vehicleId))).get();
+
+  Future<List<ItemSpec>> getVisibleItemSpecs(int vehicleId) =>
+      (select(itemSpecs)
+            ..where((s) =>
+                s.vehicleId.equals(vehicleId) & s.isHidden.equals(false)))
+          .get();
+
+  Future<void> toggleSpecHidden(int specId, {required bool hidden}) async {
+    await (update(itemSpecs)..where((s) => s.id.equals(specId)))
+        .write(ItemSpecsCompanion(isHidden: Value(hidden)));
   }
 
   Future<void> addExpenseManually({

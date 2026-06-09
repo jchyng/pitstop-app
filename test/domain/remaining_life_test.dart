@@ -14,6 +14,7 @@ ItemSpec _spec({
   int? intervalMonths,
   int? lastReplacedOdometer,
   DateTime? lastReplacedDate,
+  bool isHidden = false,
 }) =>
     ItemSpec(
       id: id,
@@ -25,6 +26,7 @@ ItemSpec _spec({
       intervalMonths: intervalMonths,
       lastReplacedOdometer: lastReplacedOdometer,
       lastReplacedDate: lastReplacedDate,
+      isHidden: isHidden,
     );
 
 void main() {

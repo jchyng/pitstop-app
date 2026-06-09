@@ -108,9 +108,7 @@ Future<List<ItemStatusEntry>> sortedItemStatus(
         ..where((v) => v.id.equals(vehicleId)))
       .getSingle();
 
-  final specs = await (db.select(db.itemSpecs)
-        ..where((t) => t.vehicleId.equals(vehicleId)))
-      .get();
+  final specs = await db.getVisibleItemSpecs(vehicleId);
 
   final today = DateTime.now();
   final entries = specs
@@ -131,6 +129,13 @@ Future<List<ItemStatusEntry>> sortedItemStatus(
   });
 
   return entries;
+}
+
+/// 관리 화면용: 숨긴 항목 포함 전체 스펙 목록.
+@riverpod
+Future<List<ItemSpec>> allItemSpecs(Ref ref, int vehicleId) async {
+  final db = ref.watch(appDatabaseProvider);
+  return db.getAllItemSpecs(vehicleId);
 }
 
 // ─── 로컬 알림 스케줄 ─────────────────────────────────────────
