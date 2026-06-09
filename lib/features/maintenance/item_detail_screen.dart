@@ -14,12 +14,14 @@ class ItemDetailScreen extends ConsumerWidget {
   final int specId;
   final int vehicleId;
   final bool autoOpenForm;
+  final MaintenanceRecord? autoOpenRecord;
 
   const ItemDetailScreen({
     super.key,
     required this.specId,
     required this.vehicleId,
     this.autoOpenForm = false,
+    this.autoOpenRecord,
   });
 
   @override
@@ -49,7 +51,11 @@ class ItemDetailScreen extends ConsumerWidget {
           );
         }
         return _DetailBody(
-            spec: spec, vehicleId: vehicleId, autoOpenForm: autoOpenForm);
+          spec: spec,
+          vehicleId: vehicleId,
+          autoOpenForm: autoOpenForm,
+          autoOpenRecord: autoOpenRecord,
+        );
       },
     );
   }
@@ -61,11 +67,13 @@ class _DetailBody extends ConsumerStatefulWidget {
   final ItemSpec spec;
   final int vehicleId;
   final bool autoOpenForm;
+  final MaintenanceRecord? autoOpenRecord;
 
   const _DetailBody({
     required this.spec,
     required this.vehicleId,
     this.autoOpenForm = false,
+    this.autoOpenRecord,
   });
 
   @override
@@ -76,9 +84,9 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
   @override
   void initState() {
     super.initState();
-    if (widget.autoOpenForm) {
+    if (widget.autoOpenForm || widget.autoOpenRecord != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _openForm(context, widget.spec, null);
+        if (mounted) _openForm(context, widget.spec, widget.autoOpenRecord);
       });
     }
   }

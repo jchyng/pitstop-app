@@ -616,8 +616,11 @@ class _RecordRow extends StatelessWidget {
     return InkWell(
       onTap: spec != null
           ? () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) =>
-                    ItemDetailScreen(specId: spec.id, vehicleId: vehicleId),
+                builder: (_) => ItemDetailScreen(
+                  specId: spec.id,
+                  vehicleId: vehicleId,
+                  autoOpenRecord: rec,
+                ),
               ))
           : null,
       borderRadius: AppRadius.card,
