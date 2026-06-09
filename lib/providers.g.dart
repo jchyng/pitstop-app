@@ -23,7 +23,7 @@ final appDatabaseProvider = Provider<AppDatabase>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AppDatabaseRef = ProviderRef<AppDatabase>;
-String _$appInitHash() => r'29f91ba345e7f5cf119768ea6b373d2970e3a87d';
+String _$appInitHash() => r'e4a575e6c3fb9511e021051a8d7c4d1ffbdf9bac';
 
 /// See also [appInit].
 @ProviderFor(appInit)
@@ -988,5 +988,46 @@ class _SortedItemStatusProviderElement
   int get vehicleId => (origin as SortedItemStatusProvider).vehicleId;
 }
 
+String _$fuelNotificationStreamHash() =>
+    r'3408e3493cb0b6e3da61d7593c50ca9413aa5309';
+
+/// Android NotificationListenerService 원시 스트림 → 주유비만 필터링.
+///
+/// Copied from [fuelNotificationStream].
+@ProviderFor(fuelNotificationStream)
+final fuelNotificationStreamProvider =
+    StreamProvider<ParsedFuelExpense>.internal(
+      fuelNotificationStream,
+      name: r'fuelNotificationStreamProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$fuelNotificationStreamHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef FuelNotificationStreamRef = StreamProviderRef<ParsedFuelExpense>;
+String _$notificationPermissionHash() =>
+    r'708d2cfb672772b2c31e1841006ee101e1d7947d';
+
+/// 알림 접근 권한 여부 (앱 포그라운드 진입 시 확인).
+///
+/// Copied from [notificationPermission].
+@ProviderFor(notificationPermission)
+final notificationPermissionProvider = AutoDisposeFutureProvider<bool>.internal(
+  notificationPermission,
+  name: r'notificationPermissionProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$notificationPermissionHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef NotificationPermissionRef = AutoDisposeFutureProviderRef<bool>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

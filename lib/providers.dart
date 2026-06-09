@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'core/db/database.dart';
+import 'core/services/notification_service.dart';
+import 'core/utils/notification_parser.dart';
 import 'domain/logic/remaining_life.dart';
 
 part 'providers.g.dart';
@@ -128,4 +130,21 @@ Future<List<ItemStatusEntry>> sortedItemStatus(
   });
 
   return entries;
+}
+
+// ─── 알림 파싱 ────────────────────────────────────────────────
+
+/// Android NotificationListenerService 원시 스트림 → 주유비만 필터링.
+@Riverpod(keepAlive: true)
+Stream<ParsedFuelExpense> fuelNotificationStream(Ref ref) {
+  return NotificationService.rawStream
+      .map((n) => NotificationParser.tryParse(n))
+      .where((e) => e != null)
+      .cast<ParsedFuelExpense>();
+}
+
+/// 알림 접근 권한 여부 (앱 포그라운드 진입 시 확인).
+@riverpod
+Future<bool> notificationPermission(Ref ref) async {
+  return NotificationService.isPermissionGranted();
 }

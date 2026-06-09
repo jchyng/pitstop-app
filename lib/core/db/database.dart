@@ -121,6 +121,8 @@ class AppDatabase extends _$AppDatabase {
     required DateTime date,
     required int amount,
     String? place,
+    String source = 'manual',
+    String? rawMessage,
   }) async {
     await into(expenses).insert(
       ExpensesCompanion.insert(
@@ -130,6 +132,8 @@ class AppDatabase extends _$AppDatabase {
         date: date,
         amount: amount,
         place: Value(place),
+        source: Value(source),
+        rawMessage: Value(rawMessage),
       ),
     );
   }

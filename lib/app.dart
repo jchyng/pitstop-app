@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/tokens.dart';
+import 'core/theme/tokens.dart' show AppColors, AppText;
+import 'core/utils/format.dart';
+import 'core/utils/notification_parser.dart';
 import 'features/garage/garage_screen.dart';
 import 'features/maintenance/maintenance_screen.dart';
 import 'features/expense/expense_screen.dart';
@@ -96,6 +99,12 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    // 주유비 자동 감지 → 가계부 자동 저장
+    ref.listen<AsyncValue<ParsedFuelExpense>>(
+      fuelNotificationStreamProvider,
+      (_, next) => next.whenData(_autoSaveFuel),
+    );
+
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: IndexedStack(
@@ -107,6 +116,52 @@ class _MainShellState extends ConsumerState<MainShell> {
         onTap: (i) => setState(() => _selectedIndex = i),
       ),
     );
+  }
+
+  Future<void> _autoSaveFuel(ParsedFuelExpense expense) async {
+    final vehicles = await ref.read(vehiclesProvider.future);
+    if (vehicles.isEmpty) return;
+    final vehicleId = vehicles.first.id;
+
+    await ref.read(appDatabaseProvider).addExpenseManually(
+          vehicleId: vehicleId,
+          category: 'fuel',
+          title: '주유',
+          date: expense.date,
+          amount: expense.amount,
+          place: expense.place,
+          source: 'auto',
+          rawMessage: expense.rawMessage,
+        );
+
+    ref.invalidate(monthlyExpensesProvider(vehicleId, expense.date.year, expense.date.month));
+    ref.invalidate(monthlySummaryProvider(vehicleId, expense.date.year, expense.date.month));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.bolt_rounded, color: AppColors.accent, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                '주유비 ₩${fmtKrw(expense.amount)} 자동 기록됨',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontFamily: AppText.fontFamily,
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF1A1E26),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        ),
+      );
+    }
   }
 }
 

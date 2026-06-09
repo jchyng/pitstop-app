@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/database.dart';
+import '../../core/services/notification_service.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/empty_state.dart';
@@ -98,6 +99,16 @@ class _MoreBody extends ConsumerWidget {
               error: (_, _) => const SizedBox.shrink(),
               data: (entries) => _StatusSummaryCard(entries: entries),
             ),
+          ),
+        ),
+
+        // 주유비 자동 감지
+        _SectionHeader('주유비 자동 감지'),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenPaddingH, 0, AppSpacing.screenPaddingH, 0),
+            child: const _FuelAutoCard(),
           ),
         ),
 
@@ -481,6 +492,170 @@ class _InfoRow extends StatelessWidget {
                   fontFamily: AppText.fontFamily,
                 )),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── 주유비 자동 감지 카드 ─────────────────────────────────────
+
+class _FuelAutoCard extends ConsumerStatefulWidget {
+  const _FuelAutoCard();
+
+  @override
+  ConsumerState<_FuelAutoCard> createState() => _FuelAutoCardState();
+}
+
+class _FuelAutoCardState extends ConsumerState<_FuelAutoCard> {
+  bool? _granted;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermission();
+  }
+
+  Future<void> _checkPermission() async {
+    final granted = await NotificationService.isPermissionGranted();
+    if (mounted) setState(() => _granted = granted);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final granted = _granted;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: AppColors.hairline),
+      ),
+      padding: const EdgeInsets.all(AppSpacing.cardPaddingV),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.accentBg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.bolt_rounded,
+                    size: 20, color: AppColors.accent),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Text('주유비 자동 감지',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary,
+                              fontFamily: AppText.fontFamily,
+                            )),
+                        if (granted == true) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.tealBg,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text('활성화',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.teal,
+                                  fontFamily: AppText.fontFamily,
+                                )),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      granted == true
+                          ? '카드 결제 알림에서 주유비를 감지합니다'
+                          : '앱 실행 중 카드 결제 알림을 자동 기록합니다',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textTertiary,
+                        fontFamily: AppText.fontFamily,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (granted == false) ...[
+            const SizedBox(height: 16),
+            const Divider(height: 1, color: AppColors.hairline),
+            const SizedBox(height: 14),
+            const Text(
+              '알림 접근 권한이 필요합니다. 설정에서 Pitstop을 활성화해주세요.',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                fontFamily: AppText.fontFamily,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () async {
+                await NotificationService.openPermissionSettings();
+                // 설정에서 돌아올 때 권한 재확인
+                await Future.delayed(const Duration(milliseconds: 500));
+                _checkPermission();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.accentBg,
+                  borderRadius: AppRadius.button,
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('알림 권한 설정',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.accent,
+                          fontFamily: AppText.fontFamily,
+                        )),
+                    SizedBox(width: 6),
+                    Icon(Icons.arrow_forward_ios_rounded,
+                        size: 12, color: AppColors.accent),
+                  ],
+                ),
+              ),
+            ),
+          ] else if (granted == true) ...[
+            const SizedBox(height: 14),
+            const Divider(height: 1, color: AppColors.hairline),
+            const SizedBox(height: 14),
+            const Text(
+              '앱이 실행 중일 때 GS칼텍스·SK에너지·S-OIL 등 주유소 결제 알림을 감지해 자동으로 가계부에 추가합니다.',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.textTertiary,
+                fontFamily: AppText.fontFamily,
+                height: 1.6,
+              ),
+            ),
+          ],
         ],
       ),
     );
