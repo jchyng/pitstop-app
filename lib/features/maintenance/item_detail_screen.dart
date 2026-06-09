@@ -188,18 +188,27 @@ class _DetailBody extends ConsumerWidget {
     );
   }
 
-  void _openForm(
+  Future<void> _openForm(
     BuildContext context,
     WidgetRef ref,
     ItemSpec spec,
     MaintenanceRecord? existing,
-  ) {
+  ) async {
+    int? initialAmount;
+    if (existing?.expenseId != null) {
+      final db = ref.read(appDatabaseProvider);
+      final expense = await db.getExpense(existing!.expenseId!);
+      initialAmount = expense?.amount;
+    }
+    if (!context.mounted) return;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _RecordFormSheet(
         existing: existing,
+        initialAmount: initialAmount,
         onSave: (type, date, odometer, amount, place, memo) async {
           final db = ref.read(appDatabaseProvider);
           if (existing == null) {
@@ -611,11 +620,13 @@ typedef _OnSave = Future<void> Function(
 
 class _RecordFormSheet extends StatefulWidget {
   final MaintenanceRecord? existing;
+  final int? initialAmount;
   final _OnSave onSave;
   final Future<void> Function()? onDelete;
 
   const _RecordFormSheet({
     this.existing,
+    this.initialAmount,
     required this.onSave,
     this.onDelete,
   });
@@ -642,7 +653,9 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
     _date = e?.date ?? DateTime.now();
     _odometerCtrl =
         TextEditingController(text: e != null ? '${e.odometer}' : '');
-    _amountCtrl = TextEditingController();
+    _amountCtrl = TextEditingController(
+      text: widget.initialAmount != null ? '${widget.initialAmount}' : '',
+    );
     _placeCtrl = TextEditingController(text: e?.place ?? '');
     _memoCtrl = TextEditingController(text: e?.memo ?? '');
   }

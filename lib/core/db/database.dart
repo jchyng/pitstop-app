@@ -162,6 +162,9 @@ class AppDatabase extends _$AppDatabase {
   Future<ItemSpec?> getItemSpec(int specId) =>
       (select(itemSpecs)..where((s) => s.id.equals(specId))).getSingleOrNull();
 
+  Future<Expense?> getExpense(int expenseId) =>
+      (select(expenses)..where((e) => e.id.equals(expenseId))).getSingleOrNull();
+
   Future<List<MaintenanceRecord>> getMaintenanceRecordsForSpec(int specId) =>
       (select(maintenanceRecords)
             ..where((r) => r.itemSpecId.equals(specId))
