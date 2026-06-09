@@ -304,6 +304,15 @@ class _ItemStatusCard extends ConsumerWidget {
                       ),
                     ),
                   ),
+                  onQuickAdd: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ItemDetailScreen(
+                        specId: entries[i].spec.id,
+                        vehicleId: vehicleId,
+                        autoOpenForm: true,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ],
@@ -320,7 +329,13 @@ class _ItemStatusRow extends StatelessWidget {
   final ItemSpec spec;
   final RemainingLifeResult result;
   final VoidCallback? onTap;
-  const _ItemStatusRow({required this.spec, required this.result, this.onTap});
+  final VoidCallback? onQuickAdd;
+  const _ItemStatusRow({
+    required this.spec,
+    required this.result,
+    this.onTap,
+    this.onQuickAdd,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -363,7 +378,7 @@ class _ItemStatusRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               // 잔여 텍스트
               Text(
                 remainText,
@@ -372,6 +387,22 @@ class _ItemStatusRow extends StatelessWidget {
                   color: remainColor,
                   fontFamily: AppText.fontFamily,
                   fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+              const SizedBox(width: 10),
+              // 빠른 기록 추가 버튼
+              GestureDetector(
+                onTap: onQuickAdd,
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: AppColors.accentBg,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.add_rounded,
+                      size: 16, color: AppColors.accent),
                 ),
               ),
             ],

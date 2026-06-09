@@ -13,11 +13,13 @@ import '../../providers.dart';
 class ItemDetailScreen extends ConsumerWidget {
   final int specId;
   final int vehicleId;
+  final bool autoOpenForm;
 
   const ItemDetailScreen({
     super.key,
     required this.specId,
     required this.vehicleId,
+    this.autoOpenForm = false,
   });
 
   @override
@@ -46,7 +48,8 @@ class ItemDetailScreen extends ConsumerWidget {
             ),
           );
         }
-        return _DetailBody(spec: spec, vehicleId: vehicleId);
+        return _DetailBody(
+            spec: spec, vehicleId: vehicleId, autoOpenForm: autoOpenForm);
       },
     );
   }
@@ -54,14 +57,37 @@ class ItemDetailScreen extends ConsumerWidget {
 
 // ─── 본문 ─────────────────────────────────────────────────────
 
-class _DetailBody extends ConsumerWidget {
+class _DetailBody extends ConsumerStatefulWidget {
   final ItemSpec spec;
   final int vehicleId;
+  final bool autoOpenForm;
 
-  const _DetailBody({required this.spec, required this.vehicleId});
+  const _DetailBody({
+    required this.spec,
+    required this.vehicleId,
+    this.autoOpenForm = false,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_DetailBody> createState() => _DetailBodyState();
+}
+
+class _DetailBodyState extends ConsumerState<_DetailBody> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.autoOpenForm) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _openForm(context, widget.spec, null);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final spec = widget.spec;
+    final vehicleId = widget.vehicleId;
+
     final vehiclesAsync = ref.watch(vehiclesProvider);
     final recordsAsync = ref.watch(maintenanceRecordsProvider(spec.id));
 
@@ -133,7 +159,7 @@ class _DetailBody extends ConsumerWidget {
                         children: [
                           const Text('교체 이력', style: AppText.sectionHeader),
                           _AddBtn(
-                            onTap: () => _openForm(context, ref, spec, null),
+                            onTap: () => _openForm(context, spec, null),
                           ),
                         ],
                       ),
@@ -178,14 +204,14 @@ class _DetailBody extends ConsumerWidget {
                                 32),
                             sliver: SliverList.separated(
                               itemCount: records.length,
-                              separatorBuilder: (_, a) =>
+                              separatorBuilder: (_, _) =>
                                   const SizedBox.shrink(),
                               itemBuilder: (_, i) => _RecordTile(
                                 record: records[i],
                                 isFirst: i == 0,
                                 isLast: i == records.length - 1,
                                 onEdit: () =>
-                                    _openForm(context, ref, spec, records[i]),
+                                    _openForm(context, spec, records[i]),
                               ),
                             ),
                           ),
@@ -201,7 +227,6 @@ class _DetailBody extends ConsumerWidget {
 
   Future<void> _openForm(
     BuildContext context,
-    WidgetRef ref,
     ItemSpec spec,
     MaintenanceRecord? existing,
   ) async {
@@ -224,7 +249,7 @@ class _DetailBody extends ConsumerWidget {
           final db = ref.read(appDatabaseProvider);
           if (existing == null) {
             await db.addRecord(
-              vehicleId: vehicleId,
+              vehicleId: widget.vehicleId,
               specId: spec.id,
               specName: spec.name,
               type: type,
@@ -246,14 +271,14 @@ class _DetailBody extends ConsumerWidget {
               memo: memo,
             );
           }
-          _invalidate(ref);
+          _invalidate();
         },
         onDelete: existing == null
             ? null
             : () async {
                 final db = ref.read(appDatabaseProvider);
                 await db.deleteRecord(existing);
-                _invalidate(ref);
+                _invalidate();
               },
       ),
     );
@@ -268,10 +293,10 @@ class _DetailBody extends ConsumerWidget {
     );
   }
 
-  void _invalidate(WidgetRef ref) {
-    ref.invalidate(itemSpecProvider(spec.id));
-    ref.invalidate(maintenanceRecordsProvider(spec.id));
-    ref.invalidate(sortedItemStatusProvider(vehicleId));
+  void _invalidate() {
+    ref.invalidate(itemSpecProvider(widget.spec.id));
+    ref.invalidate(maintenanceRecordsProvider(widget.spec.id));
+    ref.invalidate(sortedItemStatusProvider(widget.vehicleId));
     ref.invalidate(vehiclesProvider);
   }
 }
