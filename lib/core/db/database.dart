@@ -129,6 +129,11 @@ class AppDatabase extends _$AppDatabase {
         .write(VehiclesCompanion(currentOdometer: Value(km)));
   }
 
+  Future<void> updateVehicleName(int vehicleId, String name) async {
+    await (update(vehicles)..where((v) => v.id.equals(vehicleId)))
+        .write(VehiclesCompanion(name: Value(name)));
+  }
+
   Future<void> addExpenseManually({
     required int vehicleId,
     required String category,

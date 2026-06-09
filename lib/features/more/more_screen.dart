@@ -65,7 +65,10 @@ class _MoreBody extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
                 AppSpacing.screenPaddingH, 20, AppSpacing.screenPaddingH, 0),
-            child: _VehicleCard(vehicle: vehicle),
+            child: _VehicleCard(
+              vehicle: vehicle,
+              onEditName: () => _showEditNameSheet(context, ref, vehicle),
+            ),
           ),
         ),
 
@@ -126,6 +129,24 @@ class _MoreBody extends ConsumerWidget {
       ],
     );
   }
+
+  void _showEditNameSheet(
+      BuildContext context, WidgetRef ref, Vehicle vehicle) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _EditNameSheet(
+        current: vehicle.name,
+        onSave: (newName) async {
+          await ref
+              .read(appDatabaseProvider)
+              .updateVehicleName(vehicle.id, newName);
+          ref.invalidate(vehiclesProvider);
+        },
+      ),
+    );
+  }
 }
 
 // ─── 섹션 헤더 ────────────────────────────────────────────────
@@ -163,7 +184,8 @@ class _SectionHeader extends StatelessWidget {
 
 class _VehicleCard extends StatelessWidget {
   final Vehicle vehicle;
-  const _VehicleCard({required this.vehicle});
+  final VoidCallback? onEditName;
+  const _VehicleCard({required this.vehicle, this.onEditName});
 
   @override
   Widget build(BuildContext context) {
@@ -221,6 +243,25 @@ class _VehicleCard extends StatelessWidget {
                   ),
                 ],
               ],
+            ),
+          ),
+          // 별칭 편집 버튼
+          GestureDetector(
+            onTap: onEditName,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.chip,
+                borderRadius: AppRadius.button,
+              ),
+              child: const Text('편집',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                    fontFamily: AppText.fontFamily,
+                  )),
             ),
           ),
         ],
@@ -674,6 +715,176 @@ class _PlaceholderCard extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: AppRadius.card,
         border: Border.all(color: AppColors.hairline),
+      ),
+    );
+  }
+}
+
+// ─── 차량 별칭 편집 바텀시트 ──────────────────────────────────
+
+class _EditNameSheet extends StatefulWidget {
+  final String current;
+  final Future<void> Function(String name) onSave;
+  const _EditNameSheet({required this.current, required this.onSave});
+
+  @override
+  State<_EditNameSheet> createState() => _EditNameSheetState();
+}
+
+class _EditNameSheetState extends State<_EditNameSheet> {
+  late final TextEditingController _ctrl;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TextEditingController(text: widget.current);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _ctrl.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('별칭을 입력해주세요')));
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      await widget.onSave(name);
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('저장 실패: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.viewInsetsOf(context).bottom;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface2,
+        borderRadius: AppRadius.bottomSheet,
+      ),
+      padding: EdgeInsets.fromLTRB(22, 14, 22, 24 + bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 그래버
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(40),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          // 헤더
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('차량 별칭 편집',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                    fontFamily: AppText.fontFamily,
+                  )),
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: const BoxDecoration(
+                    color: AppColors.chip,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close_rounded,
+                      size: 18, color: AppColors.textSecondary),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // 입력 필드
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(10),
+              border: Border.all(color: AppColors.hairline),
+              borderRadius: AppRadius.button,
+            ),
+            child: TextField(
+              controller: _ctrl,
+              autofocus: true,
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppColors.textPrimary,
+                fontFamily: AppText.fontFamily,
+              ),
+              decoration: const InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                hintText: '예: 내 렉스턴',
+                hintStyle:
+                    TextStyle(color: AppColors.textTertiary, fontSize: 15),
+                contentPadding: EdgeInsets.zero,
+              ),
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _save(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // 저장 버튼
+          SizedBox(
+            width: double.infinity,
+            child: _saving
+                ? const Center(
+                    child:
+                        CircularProgressIndicator(color: AppColors.accent))
+                : DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppColors.accent, AppColors.accent2],
+                      ),
+                      borderRadius: AppRadius.button,
+                    ),
+                    child: TextButton(
+                      onPressed: _save,
+                      style: TextButton.styleFrom(
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: AppRadius.button),
+                      ),
+                      child: const Text('저장',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                            fontFamily: AppText.fontFamily,
+                          )),
+                    ),
+                  ),
+          ),
+        ],
       ),
     );
   }
