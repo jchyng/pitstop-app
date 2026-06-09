@@ -53,26 +53,27 @@ class _GarageBody extends ConsumerWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screenPaddingH, 16, AppSpacing.screenPaddingH, 0),
+                    AppSpacing.screenPaddingH, 18, AppSpacing.screenPaddingH, 0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('내 차고',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           color: AppColors.textTertiary,
-                          letterSpacing: 0.04,
+                          letterSpacing: 0.05,
                           fontFamily: AppText.fontFamily,
+                          fontWeight: FontWeight.w500,
                         )),
                     Container(
-                      width: 38,
-                      height: 38,
+                      width: 36,
+                      height: 36,
                       decoration: const BoxDecoration(
                         color: AppColors.chip,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.settings_outlined,
-                          size: 19, color: AppColors.textSecondary),
+                          size: 18, color: AppColors.textSecondary),
                     ),
                   ],
                 ),
@@ -107,7 +108,7 @@ class _GarageBody extends ConsumerWidget {
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.screenPaddingH, 34, AppSpacing.screenPaddingH, 6),
+                      AppSpacing.screenPaddingH, 28, AppSpacing.screenPaddingH, 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -136,7 +137,7 @@ class _GarageBody extends ConsumerWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screenPaddingH, 16, AppSpacing.screenPaddingH, 24),
+                    AppSpacing.screenPaddingH, 12, AppSpacing.screenPaddingH, 24),
                 child: Text(
                   '※ 주행 습관이나 도로 사정에 따라 실제 교체 시기가 다를 수 있습니다.',
                   style: TextStyle(
@@ -171,7 +172,7 @@ class _VehicleHero extends ConsumerWidget {
         children: [
           Row(children: [
             Text(vehicle.name, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(width: 7),
+            const SizedBox(width: 6),
             const Icon(Icons.keyboard_arrow_down_rounded,
                 size: 18, color: AppColors.textTertiary),
           ]),
@@ -186,7 +187,7 @@ class _VehicleHero extends ConsumerWidget {
           const SizedBox(height: 24),
           Text('총 주행거리',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 color: AppColors.textTertiary,
                 letterSpacing: 0.04,
                 fontFamily: AppText.fontFamily,
@@ -197,10 +198,10 @@ class _VehicleHero extends ConsumerWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(fmtKm(vehicle.currentOdometer), style: AppText.heroOdometer),
-              const SizedBox(width: 7),
+              const SizedBox(width: 6),
               const Text('km',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textSecondary,
                     fontFamily: AppText.fontFamily,
@@ -214,7 +215,7 @@ class _VehicleHero extends ConsumerWidget {
                       horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: AppColors.accentBg,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: AppRadius.button,
                   ),
                   child: const Text('수정',
                       style: TextStyle(
@@ -326,7 +327,7 @@ class _ItemStatusRow extends StatelessWidget {
       borderRadius: AppRadius.card,
       child: Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.cardPaddingH, vertical: 18),
+          horizontal: AppSpacing.cardPaddingH, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -359,7 +360,7 @@ class _ItemStatusRow extends StatelessWidget {
               Text(
                 remainText,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   color: remainColor,
                   fontFamily: AppText.fontFamily,
                   fontFeatures: const [FontFeature.tabularFigures()],
@@ -367,7 +368,7 @@ class _ItemStatusRow extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 13),
+          const SizedBox(height: 10),
           // 게이지 트랙
           ClipRRect(
             borderRadius: AppRadius.gauge,
@@ -443,7 +444,7 @@ class _StatusBadge extends StatelessWidget {
     };
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(color: bg, borderRadius: AppRadius.badge),
       child: Text(label,
           style: TextStyle(
@@ -486,4 +487,3 @@ class _AnimatedGaugeFill extends StatelessWidget {
     );
   }
 }
-

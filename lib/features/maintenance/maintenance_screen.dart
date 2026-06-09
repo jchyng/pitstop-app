@@ -124,7 +124,7 @@ class _RecordSliver extends StatelessWidget {
             // 월 헤더
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.screenPaddingH, 0, AppSpacing.screenPaddingH, 12),
+                  AppSpacing.screenPaddingH, 0, AppSpacing.screenPaddingH, 10),
               child: Row(
                 children: [
                   Text(month,
@@ -145,7 +145,7 @@ class _RecordSliver extends StatelessWidget {
             // 카드 목록
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.screenPaddingH, 0, AppSpacing.screenPaddingH, 24),
+                  AppSpacing.screenPaddingH, 0, AppSpacing.screenPaddingH, 20),
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.surface,
@@ -201,13 +201,13 @@ class _RecordRow extends StatelessWidget {
       borderRadius: AppRadius.card,
       child: Padding(
         padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.cardPaddingH, vertical: 16),
+            horizontal: AppSpacing.cardPaddingH, vertical: 14),
         child: Row(
           children: [
             // 타입 색점
             Container(
-              width: 8,
-              height: 8,
+              width: 7,
+              height: 7,
               margin: const EdgeInsets.only(top: 2, right: 12),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -237,7 +237,7 @@ class _RecordRow extends StatelessWidget {
                       // 타입 배지
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 7, vertical: 2),
+                            horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: typeBg,
                           borderRadius: AppRadius.badge,
@@ -252,7 +252,7 @@ class _RecordRow extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Text(
@@ -290,7 +290,7 @@ class _RecordRow extends StatelessWidget {
             Text(
               fmtDateShort(rec.date),
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 color: AppColors.textTertiary,
                 fontFamily: AppText.fontFamily,
               ),
@@ -330,4 +330,3 @@ class _RecordRow extends StatelessWidget {
 }
 
 // ─── 유틸 ─────────────────────────────────────────────────────
-

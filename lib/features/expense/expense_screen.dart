@@ -175,7 +175,7 @@ class _ExpenseBody extends ConsumerWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screenPaddingH, 20, AppSpacing.screenPaddingH, 0),
+                    AppSpacing.screenPaddingH, 24, AppSpacing.screenPaddingH, 0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -209,7 +209,7 @@ class _ExpenseBody extends ConsumerWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screenPaddingH, 14, AppSpacing.screenPaddingH, 0),
+                    AppSpacing.screenPaddingH, 12, AppSpacing.screenPaddingH, 0),
                 child: summaryAsync.when(
                   loading: () => const _CardShimmer(height: 160),
                   error: (_, _) => const SizedBox.shrink(),
@@ -224,7 +224,7 @@ class _ExpenseBody extends ConsumerWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screenPaddingH, 30, AppSpacing.screenPaddingH, 8),
+                    AppSpacing.screenPaddingH, 28, AppSpacing.screenPaddingH, 8),
                 child: Row(
                   children: [
                     const Text('내역', style: AppText.sectionHeader),
@@ -303,13 +303,13 @@ class _ExpenseBody extends ConsumerWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Color(0x8C4FB0F5),
-                blurRadius: 20,
-                offset: Offset(0, 8),
+                color: Color(0x804FB0F5),
+                blurRadius: 16,
+                offset: Offset(0, 6),
               ),
             ],
           ),
-          child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+          child: const Icon(Icons.add_rounded, color: Colors.white, size: 26),
         ),
       ),
     );
@@ -338,7 +338,7 @@ class _MonthSelector extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.chip,
-        borderRadius: BorderRadius.circular(11),
+        borderRadius: AppRadius.chipShape,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -349,7 +349,7 @@ class _MonthSelector extends StatelessWidget {
             child: Text(
               '$year년 $month월',
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 color: AppColors.textSecondary,
                 fontFamily: AppText.fontFamily,
               ),
@@ -375,7 +375,7 @@ class _ArrowBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
         child: Icon(
           icon,
           size: 18,
@@ -420,12 +420,13 @@ class _SummaryCard extends StatelessWidget {
         children: [
           const Text('이번 달 총 지출',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 color: AppColors.textTertiary,
-                letterSpacing: 0.03,
+                letterSpacing: 0.04,
                 fontFamily: AppText.fontFamily,
+                fontWeight: FontWeight.w500,
               )),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -433,10 +434,10 @@ class _SummaryCard extends StatelessWidget {
               Text(
                 '₩${fmtKrw(total)}',
                 style: const TextStyle(
-                  fontSize: 38,
+                  fontSize: 36,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textPrimary,
-                  letterSpacing: -0.76,
+                  letterSpacing: -0.72,
                   fontFeatures: [FontFeature.tabularFigures()],
                   fontFamily: AppText.fontFamily,
                   height: 1.0,
@@ -445,12 +446,12 @@ class _SummaryCard extends StatelessWidget {
             ],
           ),
           if (hasPrev) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Icon(
                   diff > 0 ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-                  size: 15,
+                  size: 14,
                   color: diff > 0 ? AppColors.amber : AppColors.teal,
                 ),
                 const SizedBox(width: 4),
@@ -465,9 +466,9 @@ class _SummaryCard extends StatelessWidget {
               ],
             ),
           ],
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
           const Divider(height: 1, color: AppColors.hairline),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -502,9 +503,10 @@ class _MiniCell extends StatelessWidget {
       children: [
         Text(label,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               color: AppColors.textTertiary,
               fontFamily: AppText.fontFamily,
+              fontWeight: FontWeight.w500,
             )),
         const SizedBox(height: 4),
         Text(value,
@@ -539,7 +541,7 @@ class _DonutCard extends StatelessWidget {
         .map((c) => PieChartSectionData(
               value: summary.byCategory[c.key]!.toDouble(),
               color: c.color,
-              radius: 42,
+              radius: 14,
               showTitle: false,
             ))
         .toList();
@@ -556,16 +558,16 @@ class _DonutCard extends StatelessWidget {
         children: [
           // 도넛
           SizedBox(
-            width: 128,
-            height: 128,
+            width: 120,
+            height: 120,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 PieChart(
                   PieChartData(
                     sections: sections,
-                    centerSpaceRadius: 44,
-                    sectionsSpace: 2,
+                    centerSpaceRadius: 42,
+                    sectionsSpace: 3,
                     startDegreeOffset: -90,
                   ),
                 ),
@@ -575,7 +577,7 @@ class _DonutCard extends StatelessWidget {
                     Text(
                       '₩${fmtKrw(total)}',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: AppColors.textPrimary,
                         fontFeatures: [FontFeature.tabularFigures()],
@@ -585,7 +587,7 @@ class _DonutCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     const Text('총 지출',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 10,
                           color: AppColors.textTertiary,
                           fontFamily: AppText.fontFamily,
                         )),
@@ -594,7 +596,7 @@ class _DonutCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 18),
+          const SizedBox(width: 20),
           // 범례
           Expanded(
             child: Column(
@@ -602,18 +604,18 @@ class _DonutCard extends StatelessWidget {
                 final amount = summary.byCategory[c.key]!;
                 final pct = (amount / total * 100).round();
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 7),
+                  padding: const EdgeInsets.symmetric(vertical: 6),
                   child: Row(
                     children: [
                       Container(
-                        width: 9,
-                        height: 9,
+                        width: 8,
+                        height: 8,
                         decoration: BoxDecoration(
                           color: c.color,
-                          borderRadius: BorderRadius.circular(3),
+                          shape: BoxShape.circle,
                         ),
                       ),
-                      const SizedBox(width: 9),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(c.label,
                             style: const TextStyle(
@@ -634,7 +636,7 @@ class _DonutCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       SizedBox(
-                        width: 30,
+                        width: 28,
                         child: Text(
                           '$pct%',
                           textAlign: TextAlign.right,
@@ -737,20 +739,20 @@ class _ExpenseRow extends StatelessWidget {
       },
       onDismissed: (_) => onDelete(expense.id),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 15),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         child: Row(
           children: [
             // 아이콘 칩
             Container(
-              width: 40,
-              height: 40,
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
                 color: meta.bg,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, size: 19, color: meta.color),
+              child: Icon(icon, size: 20, color: meta.color),
             ),
-            const SizedBox(width: 13),
+            const SizedBox(width: 12),
             // 제목·부제
             Expanded(
               child: Column(
@@ -771,10 +773,10 @@ class _ExpenseRow extends StatelessWidget {
                         ),
                       ),
                       if (isAuto) ...[
-                        const SizedBox(width: 7),
+                        const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 2),
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: AppColors.accentBg,
                             borderRadius: BorderRadius.circular(6),
@@ -956,16 +958,16 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
         color: AppColors.surface2,
         borderRadius: AppRadius.bottomSheet,
       ),
-      padding: EdgeInsets.fromLTRB(22, 14, 22, 26 + bottom),
+      padding: EdgeInsets.fromLTRB(22, 14, 22, 24 + bottom),
       child: Column(
         children: [
           // 그래버
           Container(
-            width: 38,
+            width: 36,
             height: 4,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(46),
+              color: Colors.white.withAlpha(40),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -995,7 +997,7 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Expanded(
             child: SingleChildScrollView(
               child: Column(
@@ -1063,7 +1065,7 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                     controller: _placeCtrl,
                     hint: '예: GS칼텍스 강남',
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 24),
                   // 저장 버튼
                   SizedBox(
                     width: double.infinity,
@@ -1078,7 +1080,7 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                                 end: Alignment.bottomRight,
                                 colors: [AppColors.accent, AppColors.accent2],
                               ),
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: AppRadius.button,
                             ),
                             child: TextButton(
                               onPressed: _save,
@@ -1086,7 +1088,7 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14)),
+                                    borderRadius: AppRadius.button),
                               ),
                               child: const Text('저장',
                                   style: TextStyle(
@@ -1118,10 +1120,11 @@ class _FormLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 18, bottom: 0),
+      padding: const EdgeInsets.only(top: 20, bottom: 0),
       child: Text(text,
           style: const TextStyle(
-            fontSize: 12,
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
             color: AppColors.textTertiary,
             fontFamily: AppText.fontFamily,
           )),
@@ -1137,11 +1140,11 @@ class _FormDecor extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
         color: Colors.white.withAlpha(10),
         border: Border.all(color: AppColors.hairline),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.button,
       ),
       child: child,
     );
@@ -1217,7 +1220,7 @@ class _CatChip extends StatelessWidget {
           border: Border.all(
             color: selected ? color : AppColors.hairline,
           ),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: AppRadius.chipShape,
         ),
         child: Text(
           label,
@@ -1272,4 +1275,3 @@ class _ErrorCard extends StatelessWidget {
     );
   }
 }
-

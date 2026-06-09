@@ -79,7 +79,7 @@ class _DetailBody extends ConsumerWidget {
           children: [
             // 상단 네비바
             Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
               child: Row(
                 children: [
                   _NavBtn(
@@ -99,7 +99,7 @@ class _DetailBody extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
 
             // 스크롤 영역
             Expanded(
@@ -110,7 +110,7 @@ class _DetailBody extends ConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(
                           AppSpacing.screenPaddingH,
-                          16,
+                          14,
                           AppSpacing.screenPaddingH,
                           0),
                       child: _StatusCard(spec: spec, result: result),
@@ -122,9 +122,9 @@ class _DetailBody extends ConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(
                           AppSpacing.screenPaddingH,
-                          30,
+                          28,
                           AppSpacing.screenPaddingH,
-                          16),
+                          14),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -294,12 +294,13 @@ class _StatusCard extends StatelessWidget {
         children: [
           Text('다음 교체까지',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
                 color: AppColors.textTertiary,
-                letterSpacing: 0.03,
+                letterSpacing: 0.04,
                 fontFamily: AppText.fontFamily,
               )),
-          const SizedBox(height: 7),
+          const SizedBox(height: 6),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -317,12 +318,12 @@ class _StatusCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
           // 게이지
           ClipRRect(
             borderRadius: AppRadius.gauge,
             child: Container(
-              height: 6,
+              height: 5,
               color: const Color(0x0FFFFFFF),
               alignment: Alignment.centerLeft,
               child: result.status == ItemStatus.unknown
@@ -346,9 +347,9 @@ class _StatusCard extends StatelessWidget {
             ),
           ),
           // 메타 그리드
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           const Divider(height: 1, color: AppColors.hairline),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           Row(
             children: [
               Expanded(
@@ -369,7 +370,7 @@ class _StatusCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -436,7 +437,8 @@ class _GridCell extends StatelessWidget {
       children: [
         Text(label,
             style: const TextStyle(
-                fontSize: 12,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
                 color: AppColors.textTertiary,
                 fontFamily: AppText.fontFamily)),
         const SizedBox(height: 4),
@@ -477,13 +479,13 @@ class _RecordTile extends StatelessWidget {
       children: [
         // 타임라인 레일
         SizedBox(
-          width: 24,
+          width: 22,
           child: Column(
             children: [
-              const SizedBox(height: 5),
+              const SizedBox(height: 6),
               Container(
-                width: 11,
-                height: 11,
+                width: 10,
+                height: 10,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isFirst ? AppColors.accent : AppColors.textTertiary,
@@ -492,7 +494,7 @@ class _RecordTile extends StatelessWidget {
                           BoxShadow(
                             color: AppColors.accentBg,
                             blurRadius: 0,
-                            spreadRadius: 4,
+                            spreadRadius: 3,
                           )
                         ]
                       : null,
@@ -501,27 +503,28 @@ class _RecordTile extends StatelessWidget {
               if (!isLast)
                 Expanded(
                   child: Container(
-                    width: 2,
+                    width: 1,
                     color: AppColors.hairline,
-                    margin: const EdgeInsets.only(top: 6),
+                    margin: const EdgeInsets.only(top: 5),
                   ),
                 ),
             ],
           ),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: 12),
         // 카드
         Expanded(
           child: GestureDetector(
             onTap: onEdit,
             child: Container(
-              margin: const EdgeInsets.only(bottom: 14),
+              margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: AppRadius.innerCard,
                 border: Border.all(color: AppColors.hairline),
               ),
-              padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.cardPaddingH, 14, AppSpacing.cardPaddingH, 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -529,15 +532,11 @@ class _RecordTile extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(fmtDateFull(record.date), style: AppText.item),
-                      if (record.expenseId != null) // amount는 별도 로드 필요
-                        const Icon(Icons.chevron_right_rounded,
-                            size: 18, color: AppColors.textTertiary)
-                      else
-                        const Icon(Icons.chevron_right_rounded,
-                            size: 18, color: AppColors.textTertiary),
+                      const Icon(Icons.chevron_right_rounded,
+                          size: 18, color: AppColors.textTertiary),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
                   Text(
                     '${fmtKm(record.odometer)} km · ${_typeLabel(record.type)}',
                     style: const TextStyle(
@@ -551,13 +550,13 @@ class _RecordTile extends StatelessWidget {
                     Row(
                       children: [
                         const Icon(Icons.location_on_outlined,
-                            size: 13, color: AppColors.textTertiary),
-                        const SizedBox(width: 4),
+                            size: 12, color: AppColors.textTertiary),
+                        const SizedBox(width: 3),
                         Flexible(
                           child: Text(
                             record.place!,
                             style: const TextStyle(
-                              fontSize: 13,
+                              fontSize: 12,
                               color: AppColors.textTertiary,
                               fontFamily: AppText.fontFamily,
                             ),
@@ -767,16 +766,16 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
         color: AppColors.surface2,
         borderRadius: AppRadius.bottomSheet,
       ),
-      padding: EdgeInsets.fromLTRB(22, 14, 22, 26 + bottom),
+      padding: EdgeInsets.fromLTRB(22, 14, 22, 24 + bottom),
       child: Column(
         children: [
           // 그래버
           Container(
-            width: 38,
+            width: 36,
             height: 4,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(46),
+              color: Colors.white.withAlpha(40),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -799,7 +798,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           // 폼
           Expanded(
             child: SingleChildScrollView(
@@ -933,7 +932,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 24),
                   // 저장 버튼
                   SizedBox(
                     width: double.infinity,
@@ -948,7 +947,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                                 end: Alignment.bottomRight,
                                 colors: [AppColors.accent, AppColors.accent2],
                               ),
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: AppRadius.button,
                             ),
                             child: TextButton(
                               onPressed: _save,
@@ -956,7 +955,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14)),
+                                    borderRadius: AppRadius.button),
                               ),
                               child: const Text(
                                 '저장',
@@ -972,7 +971,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                   ),
                   // 삭제 버튼 (수정 모드만)
                   if (isEdit && widget.onDelete != null) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     SizedBox(
                       width: double.infinity,
                       child: TextButton(
@@ -991,7 +990,7 @@ class _RecordFormSheetState extends State<_RecordFormSheet> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
@@ -1038,11 +1037,11 @@ class _AddBtn extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
         decoration: BoxDecoration(
           color: AppColors.accentBg,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: AppRadius.button,
         ),
         child: const Row(
           children: [
-            Icon(Icons.add_rounded, size: 16, color: AppColors.accent),
+            Icon(Icons.add_rounded, size: 15, color: AppColors.accent),
             SizedBox(width: 4),
             Text('추가',
                 style: TextStyle(
@@ -1065,10 +1064,11 @@ class _FieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 18, bottom: 0),
+      padding: const EdgeInsets.only(top: 20, bottom: 0),
       child: Text(text,
           style: const TextStyle(
-            fontSize: 12,
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
             color: AppColors.textTertiary,
             fontFamily: AppText.fontFamily,
           )),
@@ -1084,11 +1084,11 @@ class _InpDecor extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
         color: Colors.white.withAlpha(10),
         border: Border.all(color: AppColors.hairline),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.button,
       ),
       child: child,
     );
@@ -1114,7 +1114,7 @@ class _SegmentControl extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppColors.chip,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.button,
       ),
       child: Row(
         children: [
@@ -1129,7 +1129,7 @@ class _SegmentControl extends StatelessWidget {
                     color: selected == values[i]
                         ? AppColors.accentBg
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(9),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     options[i],

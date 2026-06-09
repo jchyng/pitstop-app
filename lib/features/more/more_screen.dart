@@ -63,7 +63,7 @@ class _MoreBody extends ConsumerWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screenPaddingH, 24, AppSpacing.screenPaddingH, 0),
+                AppSpacing.screenPaddingH, 20, AppSpacing.screenPaddingH, 0),
             child: _VehicleCard(vehicle: vehicle),
           ),
         ),
@@ -128,15 +128,15 @@ class _SectionHeader extends StatelessWidget {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-            AppSpacing.screenPaddingH, 30, AppSpacing.screenPaddingH, 10),
+            AppSpacing.screenPaddingH, 28, AppSpacing.screenPaddingH, 10),
         child: Row(
           children: [
             Text(title,
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textTertiary,
-                  letterSpacing: 0.02,
+                  letterSpacing: 0.04,
                   fontFamily: AppText.fontFamily,
                 )),
             const SizedBox(width: 10),
@@ -167,14 +167,14 @@ class _VehicleCard extends StatelessWidget {
         children: [
           // 차량 아이콘
           Container(
-            width: 52,
-            height: 52,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
               color: AppColors.accentBg,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.directions_car_rounded,
-                size: 26, color: AppColors.accent),
+                size: 24, color: AppColors.accent),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -183,12 +183,12 @@ class _VehicleCard extends StatelessWidget {
               children: [
                 Text(vehicle.name,
                     style: const TextStyle(
-                      fontSize: 17,
+                      fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: AppColors.textPrimary,
                       fontFamily: AppText.fontFamily,
                     )),
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 Text(vehicle.model,
                     style: const TextStyle(
                       fontSize: 13,
@@ -239,7 +239,7 @@ class _OdometerCard extends StatelessWidget {
       child: Row(
         children: [
           const Icon(Icons.speed_rounded,
-              size: 22, color: AppColors.textTertiary),
+              size: 20, color: AppColors.textTertiary),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -247,7 +247,8 @@ class _OdometerCard extends StatelessWidget {
               children: [
                 const Text('현재 주행거리',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
                       color: AppColors.textTertiary,
                       fontFamily: AppText.fontFamily,
                     )),
@@ -269,7 +270,7 @@ class _OdometerCard extends StatelessWidget {
                       const TextSpan(
                         text: ' km',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13,
                           color: AppColors.textSecondary,
                           fontFamily: AppText.fontFamily,
                         ),
@@ -286,7 +287,7 @@ class _OdometerCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.accentBg,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadius.button,
               ),
               child: const Text('수정',
                   style: TextStyle(
@@ -338,7 +339,7 @@ class _StatusSummaryCard extends StatelessWidget {
         border: Border.all(color: AppColors.hairline),
       ),
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.cardPaddingH, vertical: 18),
+          horizontal: AppSpacing.cardPaddingH, vertical: 20),
       child: Row(
         children: [
           Expanded(
@@ -374,7 +375,7 @@ class _StatusStat extends StatelessWidget {
       children: [
         Text('$count',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 22,
               fontWeight: FontWeight.w500,
               color: count > 0 ? color : AppColors.textTertiary,
               fontFamily: AppText.fontFamily,
@@ -395,7 +396,7 @@ class _StatusStat extends StatelessWidget {
 class _VDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(width: 1, height: 36, color: AppColors.hairline);
+    return Container(width: 1, height: 32, color: AppColors.hairline);
   }
 }
 
@@ -496,4 +497,3 @@ class _PlaceholderCard extends StatelessWidget {
     );
   }
 }
-

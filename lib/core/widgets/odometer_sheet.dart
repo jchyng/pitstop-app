@@ -3,8 +3,6 @@ import 'package:flutter/services.dart';
 import '../theme/tokens.dart';
 import '../utils/format.dart';
 
-/// 주행거리 업데이트 바텀시트.
-/// 현재값보다 낮은 값 입력 시 경고 다이얼로그를 표시한다.
 class OdometerSheet extends StatefulWidget {
   final int current;
   final Future<void> Function(int km) onSave;
@@ -92,19 +90,21 @@ class _OdometerSheetState extends State<OdometerSheet> {
         color: AppColors.surface2,
         borderRadius: AppRadius.bottomSheet,
       ),
-      padding: EdgeInsets.fromLTRB(22, 14, 22, 26 + bottom),
+      padding: EdgeInsets.fromLTRB(22, 14, 22, 24 + bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // 그래버
           Container(
-            width: 38,
+            width: 36,
             height: 4,
-            margin: const EdgeInsets.only(bottom: 20),
+            margin: const EdgeInsets.only(bottom: 18),
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(46),
+              color: Colors.white.withAlpha(40),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
+          // 헤더
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -130,7 +130,7 @@ class _OdometerSheetState extends State<OdometerSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
@@ -142,13 +142,14 @@ class _OdometerSheetState extends State<OdometerSheet> {
               ),
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
+          // 입력 필드
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: Colors.white.withAlpha(10),
               border: Border.all(color: AppColors.hairline),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.button,
             ),
             child: Row(
               children: [
@@ -174,7 +175,7 @@ class _OdometerSheetState extends State<OdometerSheet> {
                 ),
                 const Text(' km',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color: AppColors.textSecondary,
                       fontFamily: AppText.fontFamily,
                     )),
@@ -182,6 +183,7 @@ class _OdometerSheetState extends State<OdometerSheet> {
             ),
           ),
           const SizedBox(height: 20),
+          // 저장 버튼
           SizedBox(
             width: double.infinity,
             child: _saving
@@ -194,14 +196,14 @@ class _OdometerSheetState extends State<OdometerSheet> {
                         end: Alignment.bottomRight,
                         colors: [AppColors.accent, AppColors.accent2],
                       ),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: AppRadius.button,
                     ),
                     child: TextButton(
                       onPressed: _save,
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                            borderRadius: AppRadius.button),
                       ),
                       child: const Text('저장',
                           style: TextStyle(
@@ -213,7 +215,7 @@ class _OdometerSheetState extends State<OdometerSheet> {
                     ),
                   ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
         ],
       ),
     );

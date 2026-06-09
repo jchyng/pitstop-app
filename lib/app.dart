@@ -69,7 +69,7 @@ class _PitstopTabBar extends StatelessWidget {
     return Container(
       height: 80,
       decoration: const BoxDecoration(
-        color: Color(0xEB0D0F13),
+        color: Color(0xF00D0F13),
         border: Border(top: BorderSide(color: AppColors.hairline)),
       ),
       child: Row(
@@ -129,25 +129,35 @@ class _Tab extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(active ? activeIcon : icon, size: 23, color: color),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: color,
-                  fontFamily: AppText.fontFamily,
-                  fontWeight:
-                      active ? FontWeight.w500 : FontWeight.w400,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 활성 인디케이터
+            AnimatedOpacity(
+              opacity: active ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: Container(
+                width: 20,
+                height: 3,
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.circular(1.5),
                 ),
               ),
-            ],
-          ),
+            ),
+            Icon(active ? activeIcon : icon, size: 24, color: color),
+            const SizedBox(height: 5),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: color,
+                fontFamily: AppText.fontFamily,
+                fontWeight: active ? FontWeight.w500 : FontWeight.w400,
+              ),
+            ),
+          ],
         ),
       ),
     );
