@@ -54,7 +54,9 @@ class _GarageBodyState extends ConsumerState<_GarageBody> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
-        child: CustomScrollView(
+        child: Stack(
+          children: [
+            CustomScrollView(
           slivers: [
             // 툴바
             SliverToBoxAdapter(
@@ -66,11 +68,11 @@ class _GarageBodyState extends ConsumerState<_GarageBody> {
                   children: [
                     Text('내 차고',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 12,
                           color: AppColors.textTertiary,
                           letterSpacing: 0.05,
                           fontFamily: AppText.fontFamily,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         )),
                     GestureDetector(
                       onTap: widget.onNavigateToMore,
@@ -128,7 +130,7 @@ class _GarageBodyState extends ConsumerState<_GarageBody> {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 150),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 8),
+                            horizontal: 10, vertical: 10),
                         decoration: BoxDecoration(
                           color: _groupByCategory
                               ? AppColors.accentBg
@@ -164,7 +166,7 @@ class _GarageBodyState extends ConsumerState<_GarageBody> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 10),
                     // 더보기 이동 버튼
                     GestureDetector(
                       onTap: widget.onNavigateToMore,
@@ -206,6 +208,23 @@ class _GarageBodyState extends ConsumerState<_GarageBody> {
                     color: AppColors.textTertiary,
                     height: 1.6,
                     fontFamily: AppText.fontFamily,
+                  ),
+                ),
+              ),
+            ),
+          ],
+            ),
+            Positioned(
+              bottom: 0, left: 0, right: 0,
+              child: IgnorePointer(
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [AppColors.bg.withAlpha(0), AppColors.bg],
+                    ),
                   ),
                 ),
               ),
@@ -253,7 +272,7 @@ class _VehicleHero extends ConsumerWidget {
                 letterSpacing: 0.04,
                 fontFamily: AppText.fontFamily,
               )),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -273,7 +292,7 @@ class _VehicleHero extends ConsumerWidget {
                 onTap: () => _showOdometerSheet(context, ref),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 8),
+                      horizontal: 14, vertical: 11),
                   decoration: BoxDecoration(
                     color: AppColors.accentBg,
                     borderRadius: AppRadius.button,
@@ -410,9 +429,6 @@ class _ItemStatusCard extends ConsumerWidget {
                 letterSpacing: 0.02,
               ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-                child: Container(height: 1, color: AppColors.hairline)),
           ],
         ),
       ));
@@ -478,7 +494,7 @@ class _ItemStatusRow extends StatelessWidget {
       borderRadius: AppRadius.card,
       child: Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.cardPaddingH, vertical: 16),
+          horizontal: AppSpacing.cardPaddingH, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -523,8 +539,8 @@ class _ItemStatusRow extends StatelessWidget {
                 onTap: onQuickAdd,
                 behavior: HitTestBehavior.opaque,
                 child: Container(
-                  width: 36,
-                  height: 36,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: AppColors.accentBg,
                     shape: BoxShape.circle,
@@ -535,13 +551,13 @@ class _ItemStatusRow extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           // 게이지 트랙
           ClipRRect(
             borderRadius: AppRadius.gauge,
             child: Container(
-              height: 5,
-              color: const Color(0x0FFFFFFF),
+              height: 6,
+              color: const Color(0x18FFFFFF),
               alignment: Alignment.centerLeft,
               child: result.status == ItemStatus.unknown
                   ? const SizedBox.shrink()

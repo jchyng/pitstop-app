@@ -228,20 +228,6 @@ class _Tab extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 활성 인디케이터
-            AnimatedOpacity(
-              opacity: active ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                width: 20,
-                height: 3,
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.accent,
-                  borderRadius: BorderRadius.circular(1.5),
-                ),
-              ),
-            ),
             Icon(active ? activeIcon : icon, size: 24, color: color),
             const SizedBox(height: 5),
             Text(
