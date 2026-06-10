@@ -159,6 +159,42 @@ class AppDatabase extends _$AppDatabase {
         .write(ItemSpecsCompanion(isHidden: Value(hidden)));
   }
 
+  Future<void> updateItemSpec(
+    int specId, {
+    String? name,
+    required int? intervalKm,
+    required int? intervalMonths,
+  }) async {
+    await (update(itemSpecs)..where((s) => s.id.equals(specId))).write(
+      ItemSpecsCompanion(
+        name: name != null ? Value(name) : const Value.absent(),
+        intervalKm: Value(intervalKm),
+        intervalMonths: Value(intervalMonths),
+      ),
+    );
+  }
+
+  Future<void> addCustomItemSpec({
+    required int vehicleId,
+    required String name,
+    required String category,
+    int? intervalKm,
+    int? intervalMonths,
+    String behavior = 'replace_only',
+  }) async {
+    await into(itemSpecs).insert(
+      ItemSpecsCompanion.insert(
+        vehicleId: vehicleId,
+        key: 'custom_${DateTime.now().millisecondsSinceEpoch}',
+        name: name,
+        category: category,
+        intervalKm: Value(intervalKm),
+        intervalMonths: Value(intervalMonths),
+        behavior: Value(behavior),
+      ),
+    );
+  }
+
   Future<void> addExpenseManually({
     required int vehicleId,
     required String category,

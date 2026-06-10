@@ -261,8 +261,7 @@ class _VehicleCard extends StatelessWidget {
           GestureDetector(
             onTap: onEditName,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.chip,
                 borderRadius: AppRadius.button,
@@ -562,9 +561,6 @@ class _SpecManageCard extends ConsumerWidget {
       data: (specs) {
         if (specs.isEmpty) return const SizedBox.shrink();
 
-        final visible = specs.where((s) => !s.isHidden).toList();
-        final hidden = specs.where((s) => s.isHidden).toList();
-
         void toggle(ItemSpec spec, bool hidden) async {
           await ref
               .read(appDatabaseProvider)
@@ -573,73 +569,83 @@ class _SpecManageCard extends ConsumerWidget {
           ref.invalidate(sortedItemStatusProvider(vehicleId));
         }
 
+        void showEditSheet(ItemSpec spec) {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => Padding(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.viewInsetsOf(context).bottom),
+              child: _EditSpecSheet(spec: spec, vehicleId: vehicleId),
+            ),
+          );
+        }
+
+        void showAddSheet() {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => Padding(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.viewInsetsOf(context).bottom),
+              child: _AddSpecSheet(vehicleId: vehicleId),
+            ),
+          );
+        }
+
         return Column(
           children: [
-            // 활성 소모품
-            if (visible.isNotEmpty)
-              Container(
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: AppRadius.card,
+                border: Border.all(color: AppColors.hairline),
+              ),
+              child: Column(
+                children: [
+                  for (int i = 0; i < specs.length; i++) ...[
+                    _SpecToggleRow(
+                      spec: specs[i],
+                      onToggle: (h) => toggle(specs[i], h),
+                      onEdit: () => showEditSheet(specs[i]),
+                    ),
+                    if (i < specs.length - 1)
+                      const Divider(
+                          height: 1, indent: 52, color: AppColors.hairline),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: showAddSheet,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 13),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: AppRadius.card,
                   border: Border.all(color: AppColors.hairline),
                 ),
-                child: Column(
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    for (int i = 0; i < visible.length; i++) ...[
-                      _SpecToggleRow(
-                        spec: visible[i],
-                        onToggle: (h) => toggle(visible[i], h),
+                    Icon(Icons.add_rounded,
+                        size: 16, color: AppColors.textTertiary),
+                    SizedBox(width: 6),
+                    Text(
+                      '소모품 추가',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textTertiary,
+                        fontFamily: AppText.fontFamily,
                       ),
-                      if (i < visible.length - 1)
-                        const Divider(
-                            height: 1, indent: 52, color: AppColors.hairline),
-                    ],
+                    ),
                   ],
                 ),
               ),
-
-            // 숨긴 소모품 섹션
-            if (hidden.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 20, 0, 8),
-                child: Row(
-                  children: [
-                    const Text('숨긴 소모품',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textTertiary,
-                          letterSpacing: 0.04,
-                          fontFamily: AppText.fontFamily,
-                        )),
-                    const SizedBox(width: 10),
-                    Expanded(
-                        child:
-                            Container(height: 1, color: AppColors.hairline)),
-                  ],
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: AppRadius.card,
-                  border: Border.all(color: AppColors.hairline),
-                ),
-                child: Column(
-                  children: [
-                    for (int i = 0; i < hidden.length; i++) ...[
-                      _SpecToggleRow(
-                        spec: hidden[i],
-                        onToggle: (h) => toggle(hidden[i], h),
-                      ),
-                      if (i < hidden.length - 1)
-                        const Divider(
-                            height: 1, indent: 52, color: AppColors.hairline),
-                    ],
-                  ],
-                ),
-              ),
-            ],
+            ),
           ],
         );
       },
@@ -647,80 +653,123 @@ class _SpecManageCard extends ConsumerWidget {
   }
 }
 
+Color _specDotColor(String category) => switch (category) {
+      '엔진·오일' => AppColors.amber,
+      '연료·증발가스' => AppColors.teal,
+      '공조·외부' => AppColors.indigo,
+      '제동·냉각·변속' => AppColors.red,
+      '점화·벨트' => AppColors.violet,
+      '타이어·배터리' => AppColors.green,
+      _ => AppColors.textTertiary,
+    };
+
 class _SpecToggleRow extends StatelessWidget {
   final ItemSpec spec;
   final void Function(bool hidden) onToggle;
-  const _SpecToggleRow({required this.spec, required this.onToggle});
-
-  static Color _dotColor(String category) => switch (category) {
-        '엔진·오일' => AppColors.amber,
-        '연료·증발가스' => AppColors.teal,
-        '공조·외부' => AppColors.indigo,
-        '제동·냉각·변속' => AppColors.red,
-        '점화·벨트' => AppColors.violet,
-        '타이어·배터리' => AppColors.green,
-        _ => AppColors.textTertiary,
-      };
+  final VoidCallback onEdit;
+  const _SpecToggleRow({
+    required this.spec,
+    required this.onToggle,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
     final active = !spec.isHidden;
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.cardPaddingH, vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: active
-                  ? _dotColor(spec.category)
-                  : AppColors.textTertiary.withAlpha(80),
-              shape: BoxShape.circle,
+    return Row(
+      children: [
+        Expanded(
+          child: GestureDetector(
+            onTap: onEdit,
+            behavior: HitTestBehavior.translucent,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.cardPaddingH, 14, 8, 14),
+              child: Row(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: active
+                          ? _specDotColor(spec.category)
+                          : AppColors.textTertiary.withAlpha(60),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: active
+                                ? AppColors.textPrimary
+                                : AppColors.textTertiary,
+                            fontFamily: AppText.fontFamily,
+                          ),
+                          child: Text(spec.name),
+                        ),
+                        Text(
+                          spec.category,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textTertiary,
+                            fontFamily: AppText.fontFamily,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  spec.name,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: active
-                        ? AppColors.textPrimary
-                        : AppColors.textTertiary,
-                    fontFamily: AppText.fontFamily,
-                  ),
-                ),
-                Text(
-                  spec.category,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textTertiary,
-                    fontFamily: AppText.fontFamily,
-                  ),
-                ),
-              ],
-            ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: AppSpacing.cardPaddingH),
+          child: GestureDetector(
+            onTap: () => onToggle(!active),
+            child: _CompactToggle(active: active),
           ),
-          Switch(
-            value: active,
-            onChanged: (on) => onToggle(!on),
-            activeThumbColor: Colors.white,
-            inactiveThumbColor: Colors.white,
-            trackOutlineColor:
-                WidgetStateProperty.all(Colors.transparent),
-            trackColor: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.selected)) {
-                return AppColors.accent;
-              }
-              return AppColors.chip;
-            }),
+        ),
+      ],
+    );
+  }
+}
+
+class _CompactToggle extends StatelessWidget {
+  final bool active;
+  const _CompactToggle({required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      width: 38,
+      height: 22,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: active ? AppColors.accent : AppColors.chip,
+        borderRadius: BorderRadius.circular(11),
+      ),
+      child: AnimatedAlign(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        alignment: active ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          width: 18,
+          height: 18,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
           ),
-        ],
+        ),
       ),
     );
   }
@@ -907,6 +956,7 @@ class _PlaceholderCard extends StatelessWidget {
   }
 }
 
+
 // ─── 차량 별칭 편집 바텀시트 ──────────────────────────────────
 
 class _EditNameSheet extends StatefulWidget {
@@ -964,7 +1014,6 @@ class _EditNameSheetState extends State<_EditNameSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 그래버
           Center(
             child: Container(
               width: 36,
@@ -976,7 +1025,6 @@ class _EditNameSheetState extends State<_EditNameSheet> {
               ),
             ),
           ),
-          // 헤더
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1003,7 +1051,6 @@ class _EditNameSheetState extends State<_EditNameSheet> {
             ],
           ),
           const SizedBox(height: 20),
-          // 입력 필드
           FormInputDecor(
             child: TextField(
               controller: _ctrl,
@@ -1017,8 +1064,7 @@ class _EditNameSheetState extends State<_EditNameSheet> {
                 isDense: true,
                 border: InputBorder.none,
                 hintText: '예: 내 렉스턴',
-                hintStyle:
-                    TextStyle(color: AppColors.textTertiary, fontSize: 15),
+                hintStyle: TextStyle(color: AppColors.textTertiary, fontSize: 15),
                 contentPadding: EdgeInsets.zero,
               ),
               textInputAction: TextInputAction.done,
@@ -1026,13 +1072,11 @@ class _EditNameSheetState extends State<_EditNameSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          // 저장 버튼
           SizedBox(
             width: double.infinity,
             child: _saving
                 ? const Center(
-                    child:
-                        CircularProgressIndicator(color: AppColors.accent))
+                    child: CircularProgressIndicator(color: AppColors.accent))
                 : DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
@@ -1045,8 +1089,7 @@ class _EditNameSheetState extends State<_EditNameSheet> {
                     child: TextButton(
                       onPressed: _save,
                       style: TextButton.styleFrom(
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                             borderRadius: AppRadius.button),
                       ),
@@ -1061,6 +1104,540 @@ class _EditNameSheetState extends State<_EditNameSheet> {
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── 소모품 주기 편집 시트 ─────────────────────────────────────
+
+class _EditSpecSheet extends ConsumerStatefulWidget {
+  final ItemSpec spec;
+  final int vehicleId;
+  const _EditSpecSheet({required this.spec, required this.vehicleId});
+
+  @override
+  ConsumerState<_EditSpecSheet> createState() => _EditSpecSheetState();
+}
+
+class _EditSpecSheetState extends ConsumerState<_EditSpecSheet> {
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _kmCtrl;
+  late final TextEditingController _monthCtrl;
+  bool _saving = false;
+
+  bool get _isCustom => widget.spec.key.startsWith('custom_');
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl = TextEditingController(text: widget.spec.name);
+    _kmCtrl = TextEditingController(
+      text: widget.spec.intervalKm != null
+          ? fmtKm(widget.spec.intervalKm!)
+          : '',
+    );
+    _monthCtrl = TextEditingController(
+      text: widget.spec.intervalMonths?.toString() ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _kmCtrl.dispose();
+    _monthCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _isCustom ? _nameCtrl.text.trim() : null;
+    if (_isCustom && (name == null || name.isEmpty)) {
+      showAppSnackBar(context, '이름을 입력해주세요');
+      return;
+    }
+    final kmRaw = _kmCtrl.text.replaceAll(',', '').trim();
+    final monthRaw = _monthCtrl.text.trim();
+    final km = kmRaw.isEmpty ? null : int.tryParse(kmRaw);
+    final months = monthRaw.isEmpty ? null : int.tryParse(monthRaw);
+    if (kmRaw.isNotEmpty && km == null) {
+      showAppSnackBar(context, 'km 값을 올바르게 입력해주세요');
+      return;
+    }
+    if (monthRaw.isNotEmpty && months == null) {
+      showAppSnackBar(context, '개월 값을 올바르게 입력해주세요');
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      await ref.read(appDatabaseProvider).updateItemSpec(
+            widget.spec.id,
+            name: name,
+            intervalKm: km,
+            intervalMonths: months,
+          );
+      ref.invalidate(allItemSpecsProvider(widget.vehicleId));
+      ref.invalidate(itemSpecsProvider(widget.vehicleId));
+      ref.invalidate(sortedItemStatusProvider(widget.vehicleId));
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) showAppSnackBar(context, '저장 실패: $e');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface2,
+        borderRadius: AppRadius.bottomSheet,
+      ),
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenPaddingH, 14, AppSpacing.screenPaddingH, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(40),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: _specDotColor(widget.spec.category),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.spec.name,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary,
+                        fontFamily: AppText.fontFamily,
+                      ),
+                    ),
+                    Text(
+                      widget.spec.category,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textTertiary,
+                        fontFamily: AppText.fontFamily,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: const BoxDecoration(
+                    color: AppColors.chip,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close_rounded,
+                      size: 16, color: AppColors.textSecondary),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          if (_isCustom) ...[
+            const FormLabel('이름'),
+            const SizedBox(height: 8),
+            FormInputDecor(
+              child: TextField(
+                controller: _nameCtrl,
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: AppColors.textPrimary,
+                  fontFamily: AppText.fontFamily,
+                ),
+                decoration: const InputDecoration(
+                  isDense: true,
+                  border: InputBorder.none,
+                  hintText: '소모품 이름',
+                  hintStyle: TextStyle(
+                      color: AppColors.textTertiary,
+                      fontFamily: AppText.fontFamily),
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+          ],
+          const FormLabel('km 주기'),
+          const SizedBox(height: 8),
+          FormInputDecor(
+            child: TextField(
+              controller: _kmCtrl,
+              keyboardType: TextInputType.number,
+              inputFormatters: [ThousandsInputFormatter()],
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppColors.textPrimary,
+                fontFamily: AppText.fontFamily,
+              ),
+              decoration: const InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                hintText: '비워두면 km 알림 없음',
+                hintStyle: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontFamily: AppText.fontFamily),
+                suffixText: 'km',
+                suffixStyle: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontFamily: AppText.fontFamily),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          const FormLabel('개월 주기'),
+          const SizedBox(height: 8),
+          FormInputDecor(
+            child: TextField(
+              controller: _monthCtrl,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppColors.textPrimary,
+                fontFamily: AppText.fontFamily,
+              ),
+              decoration: const InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                hintText: '비워두면 기간 알림 없음',
+                hintStyle: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontFamily: AppText.fontFamily),
+                suffixText: '개월',
+                suffixStyle: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontFamily: AppText.fontFamily),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          FilledButton(
+            onPressed: _saving ? null : _save,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              disabledBackgroundColor: AppColors.accent.withAlpha(80),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: AppRadius.button),
+            ),
+            child: _saving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white),
+                  )
+                : const Text('저장',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                      fontFamily: AppText.fontFamily,
+                    )),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── 소모품 직접 추가 시트 ─────────────────────────────────────
+
+const _kSpecCategories = [
+  '엔진·오일',
+  '연료·증발가스',
+  '공조·외부',
+  '제동·냉각·변속',
+  '점화·벨트',
+  '타이어·배터리',
+];
+
+const _kBehaviorOptions = [
+  ('replace_only', '교체'),
+  ('inspect_only', '점검'),
+  ('both', '교체 · 점검'),
+];
+
+class _AddSpecSheet extends ConsumerStatefulWidget {
+  final int vehicleId;
+  const _AddSpecSheet({required this.vehicleId});
+
+  @override
+  ConsumerState<_AddSpecSheet> createState() => _AddSpecSheetState();
+}
+
+class _AddSpecSheetState extends ConsumerState<_AddSpecSheet> {
+  final _nameCtrl = TextEditingController();
+  final _kmCtrl = TextEditingController();
+  final _monthCtrl = TextEditingController();
+  String _category = _kSpecCategories.first;
+  String _behavior = 'replace_only';
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _kmCtrl.dispose();
+    _monthCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) {
+      showAppSnackBar(context, '이름을 입력해주세요');
+      return;
+    }
+    final kmRaw = _kmCtrl.text.replaceAll(',', '').trim();
+    final monthRaw = _monthCtrl.text.trim();
+    final km = kmRaw.isEmpty ? null : int.tryParse(kmRaw);
+    final months = monthRaw.isEmpty ? null : int.tryParse(monthRaw);
+    if (kmRaw.isNotEmpty && km == null) {
+      showAppSnackBar(context, 'km 값을 올바르게 입력해주세요');
+      return;
+    }
+    if (monthRaw.isNotEmpty && months == null) {
+      showAppSnackBar(context, '개월 값을 올바르게 입력해주세요');
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      await ref.read(appDatabaseProvider).addCustomItemSpec(
+            vehicleId: widget.vehicleId,
+            name: name,
+            category: _category,
+            intervalKm: km,
+            intervalMonths: months,
+            behavior: _behavior,
+          );
+      ref.invalidate(allItemSpecsProvider(widget.vehicleId));
+      ref.invalidate(itemSpecsProvider(widget.vehicleId));
+      ref.invalidate(sortedItemStatusProvider(widget.vehicleId));
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) showAppSnackBar(context, '저장 실패: $e');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface2,
+        borderRadius: AppRadius.bottomSheet,
+      ),
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenPaddingH, 14, AppSpacing.screenPaddingH, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(40),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const Text(
+            '소모품 추가',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary,
+              fontFamily: AppText.fontFamily,
+            ),
+          ),
+          const SizedBox(height: 20),
+          const FormLabel('이름'),
+          const SizedBox(height: 8),
+          FormInputDecor(
+            child: TextField(
+              controller: _nameCtrl,
+              autofocus: true,
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppColors.textPrimary,
+                fontFamily: AppText.fontFamily,
+              ),
+              decoration: const InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                hintText: '예: 타이어 로테이션',
+                hintStyle: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontFamily: AppText.fontFamily),
+              ),
+            ),
+          ),
+          const FormLabel('카테고리'),
+          const SizedBox(height: 8),
+          _DropdownRow<String>(
+            value: _category,
+            items: _kSpecCategories
+                .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                .toList(),
+            onChanged: (v) => setState(() => _category = v!),
+          ),
+          const SizedBox(height: 4),
+          const FormLabel('km 주기 (선택)'),
+          const SizedBox(height: 8),
+          FormInputDecor(
+            child: TextField(
+              controller: _kmCtrl,
+              keyboardType: TextInputType.number,
+              inputFormatters: [ThousandsInputFormatter()],
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppColors.textPrimary,
+                fontFamily: AppText.fontFamily,
+              ),
+              decoration: const InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                hintText: '없음',
+                hintStyle: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontFamily: AppText.fontFamily),
+                suffixText: 'km',
+                suffixStyle: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontFamily: AppText.fontFamily),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          const FormLabel('개월 주기 (선택)'),
+          const SizedBox(height: 8),
+          FormInputDecor(
+            child: TextField(
+              controller: _monthCtrl,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppColors.textPrimary,
+                fontFamily: AppText.fontFamily,
+              ),
+              decoration: const InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                hintText: '없음',
+                hintStyle: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontFamily: AppText.fontFamily),
+                suffixText: '개월',
+                suffixStyle: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontFamily: AppText.fontFamily),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          const FormLabel('작업 유형'),
+          const SizedBox(height: 8),
+          _DropdownRow<String>(
+            value: _behavior,
+            items: _kBehaviorOptions
+                .map((b) => DropdownMenuItem(value: b.$1, child: Text(b.$2)))
+                .toList(),
+            onChanged: (v) => setState(() => _behavior = v!),
+          ),
+          const SizedBox(height: 24),
+          FilledButton(
+            onPressed: _saving ? null : _save,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              disabledBackgroundColor: AppColors.accent.withAlpha(80),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: AppRadius.button),
+            ),
+            child: _saving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white),
+                  )
+                : const Text('추가',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                      fontFamily: AppText.fontFamily,
+                    )),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DropdownRow<T> extends StatelessWidget {
+  final T value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?> onChanged;
+  const _DropdownRow(
+      {required this.value, required this.items, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(10),
+        border: Border.all(color: AppColors.hairline),
+        borderRadius: AppRadius.button,
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          items: items,
+          onChanged: onChanged,
+          dropdownColor: AppColors.surface2,
+          style: const TextStyle(
+            fontSize: 15,
+            color: AppColors.textPrimary,
+            fontFamily: AppText.fontFamily,
+          ),
+          iconEnabledColor: AppColors.textTertiary,
+          isDense: true,
+        ),
       ),
     );
   }
