@@ -10,11 +10,11 @@ class LocalNotificationService {
   static const _channelId = 'pitstop_maintenance';
   static const _channelName = '정비 알림';
 
-  /// 딥링크용 — MainShell 초기화 시 vehicleId 저장
-  static int? currentVehicleId;
+  /// 알림 탭 콜백 — payload 형식: "vehicleId:specId"
+  static void Function(String payload)? onTapped;
 
-  /// 알림 탭 콜백 (main.dart에서 등록)
-  static void Function(int specId)? onTapped;
+  /// 딥링크 폴백용 (payload 파싱 실패 시)
+  static int? currentVehicleId;
 
   static Future<void> initialize() async {
     tz.initializeTimeZones();
@@ -27,8 +27,8 @@ class LocalNotificationService {
     await _plugin.initialize(
       settings,
       onDidReceiveNotificationResponse: (details) {
-        final specId = int.tryParse(details.payload ?? '');
-        if (specId != null) onTapped?.call(specId);
+        final payload = details.payload;
+        if (payload != null && payload.isNotEmpty) onTapped?.call(payload);
       },
     );
 
@@ -41,18 +41,21 @@ class LocalNotificationService {
 
   /// 소모품 상태 목록을 받아 알림을 재스케줄한다.
   ///
-  /// - warn / overdue 항목  : 내일 오전 9시 알림 (ID = specId)
-  /// - 시간 기준 ok 항목    : D-30, D-7 미래 알림 (ID = specId*100+30 / +7)
-  /// - ok / unknown 항목   : 기존 알림 취소
+  /// - warn / overdue 항목: 내일 오전 9시 경고 알림 (ID = specId)
+  /// - ok 항목 (remainingDays 있음): D-30, D-7 선제 알림 (ID = specId*100+30/+7)
+  ///   - 시간 기준: lastReplacedDate + intervalMonths 로 고정 due date
+  ///   - km 기준 추정: now + remainingDays 로 추정 due date
+  /// - unknown 또는 remainingDays 없음: 모든 알림 취소
   static Future<void> scheduleAll(
-      List<({ItemSpec spec, RemainingLifeResult result})> entries) async {
+      List<({ItemSpec spec, RemainingLifeResult result})> entries,
+      {required int vehicleId}) async {
     for (final entry in entries) {
       final spec = entry.spec;
       final result = entry.result;
+      final payload = '$vehicleId:${spec.id}';
 
       if (result.status == ItemStatus.warn ||
           result.status == ItemStatus.overdue) {
-        // 내일 오전 9시 경고 알림
         final body = result.status == ItemStatus.overdue
             ? '교체 주기를 초과했습니다. 빠른 교체를 권장합니다.'
             : '교체 시기가 다가오고 있습니다.';
@@ -61,21 +64,27 @@ class LocalNotificationService {
           title: spec.name,
           body: body,
           at: _nextMorning(),
-          payload: '${spec.id}',
+          payload: payload,
         );
-        // 시간 기준 D-30 / D-7 알림은 이미 지났으므로 취소
         await _plugin.cancel(spec.id * 100 + 30);
         await _plugin.cancel(spec.id * 100 + 7);
       } else if (result.status == ItemStatus.ok &&
-          spec.lastReplacedDate != null &&
-          spec.intervalMonths != null) {
-        // ok 이지만 미래 시점에 교체 예정 → D-30 / D-7 선제 알림
-        await _plugin.cancel(spec.id); // 경고 알림 제거
-        final dueDate = spec.lastReplacedDate!
-            .add(Duration(days: (spec.intervalMonths! * 30.4).round()));
+          result.remainingDays != null) {
+        await _plugin.cancel(spec.id);
+
+        // 고정 due date (시간 기준) vs 추정 due date (km 기준)
+        final DateTime dueDate;
+        if (spec.lastReplacedDate != null && spec.intervalMonths != null) {
+          dueDate = spec.lastReplacedDate!
+              .add(Duration(days: (spec.intervalMonths! * 30.4).round()));
+        } else {
+          dueDate =
+              DateTime.now().add(Duration(days: result.remainingDays!));
+        }
+
+        final now = DateTime.now();
         final d30 = dueDate.subtract(const Duration(days: 30));
         final d7 = dueDate.subtract(const Duration(days: 7));
-        final now = DateTime.now();
 
         if (d30.isAfter(now)) {
           await _schedule(
@@ -83,7 +92,7 @@ class LocalNotificationService {
             title: spec.name,
             body: '30일 후 교체 시기가 도래합니다.',
             at: _toSeoul(d30.copyWith(hour: 9, minute: 0, second: 0)),
-            payload: '${spec.id}',
+            payload: payload,
           );
         } else {
           await _plugin.cancel(spec.id * 100 + 30);
@@ -95,13 +104,12 @@ class LocalNotificationService {
             title: spec.name,
             body: '7일 후 교체 시기가 도래합니다.',
             at: _toSeoul(d7.copyWith(hour: 9, minute: 0, second: 0)),
-            payload: '${spec.id}',
+            payload: payload,
           );
         } else {
           await _plugin.cancel(spec.id * 100 + 7);
         }
       } else {
-        // unknown 또는 조건 없음 → 알림 전부 취소
         await _plugin.cancel(spec.id);
         await _plugin.cancel(spec.id * 100 + 30);
         await _plugin.cancel(spec.id * 100 + 7);

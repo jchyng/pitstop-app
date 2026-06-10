@@ -47,6 +47,19 @@ RemainingLifeResult calculateRemainingLife(
     ratioTime = remDays / (spec.intervalMonths! * 30.4);
   }
 
+  // km 기반 항목에서 시간 주기가 없을 때 km/day 추정으로 잔여일수 보완
+  // (알림 D-30/D-7 스케줄링에 사용; 상태 판정에는 영향 없음)
+  if (remDays == null && remKm != null && spec.lastReplacedDate != null) {
+    final daysSince = today.difference(spec.lastReplacedDate!).inDays;
+    if (daysSince > 0) {
+      final kmTraveled = currentOdometer - spec.lastReplacedOdometer!;
+      if (kmTraveled > 0) {
+        final kmPerDay = kmTraveled / daysSince;
+        remDays = (remKm / kmPerDay).round();
+      }
+    }
+  }
+
   // 이력은 있으나 계산 가능한 축이 없는 엣지 케이스 (interval 모두 null)
   if (ratioKm == null && ratioTime == null) {
     return const RemainingLifeResult(status: ItemStatus.unknown);

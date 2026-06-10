@@ -146,10 +146,13 @@ Future<List<ItemSpec>> allItemSpecs(Ref ref, int vehicleId) async {
 Future<void> scheduleNotifications(Ref ref) async {
   final vehicles = await ref.watch(vehiclesProvider.future);
   if (vehicles.isEmpty) return;
-  final vehicleId = vehicles.first.id;
-  LocalNotificationService.currentVehicleId = vehicleId;
-  final entries = await ref.watch(sortedItemStatusProvider(vehicleId).future);
-  await LocalNotificationService.scheduleAll(entries);
+  LocalNotificationService.currentVehicleId = vehicles.first.id;
+  for (final vehicle in vehicles) {
+    final entries =
+        await ref.watch(sortedItemStatusProvider(vehicle.id).future);
+    await LocalNotificationService.scheduleAll(entries,
+        vehicleId: vehicle.id);
+  }
 }
 
 // ─── 알림 파싱 ────────────────────────────────────────────────
