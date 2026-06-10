@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../theme/tokens.dart';
 import '../utils/format.dart';
+import '../utils/snackbar.dart';
 
 class OdometerSheet extends StatefulWidget {
   final int current;
@@ -24,7 +24,8 @@ class _OdometerSheetState extends State<OdometerSheet> {
   @override
   void initState() {
     super.initState();
-    _ctrl = TextEditingController(text: '${widget.current}');
+    _ctrl = TextEditingController(
+        text: widget.current > 0 ? fmtKm(widget.current) : '');
   }
 
   @override
@@ -36,8 +37,7 @@ class _OdometerSheetState extends State<OdometerSheet> {
   Future<void> _save() async {
     final km = int.tryParse(_ctrl.text.trim().replaceAll(',', ''));
     if (km == null || km <= 0) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('올바른 주행거리를 입력해주세요')));
+      showAppSnackBar(context, '올바른 주행거리를 입력해주세요');
       return;
     }
     if (km < widget.current) {
@@ -72,10 +72,7 @@ class _OdometerSheetState extends State<OdometerSheet> {
       await widget.onSave(km);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('저장 실패: $e')));
-      }
+      if (mounted) showAppSnackBar(context, '저장 실패: $e');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -157,7 +154,7 @@ class _OdometerSheetState extends State<OdometerSheet> {
                   child: TextField(
                     controller: _ctrl,
                     keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    inputFormatters: [ThousandsInputFormatter()],
                     autofocus: true,
                     style: const TextStyle(
                       fontSize: 22,
