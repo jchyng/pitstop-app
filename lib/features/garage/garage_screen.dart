@@ -45,8 +45,6 @@ class _GarageBody extends ConsumerStatefulWidget {
 }
 
 class _GarageBodyState extends ConsumerState<_GarageBody> {
-  bool _groupByCategory = false;
-
   @override
   Widget build(BuildContext context) {
     final vehiclesAsync = ref.watch(vehiclesProvider);
@@ -123,51 +121,6 @@ class _GarageBodyState extends ConsumerState<_GarageBody> {
                     Text('소모품 현황',
                         style: Theme.of(context).textTheme.titleMedium),
                     const Spacer(),
-                    // 카테고리 그룹 토글
-                    GestureDetector(
-                      onTap: () =>
-                          setState(() => _groupByCategory = !_groupByCategory),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: _groupByCategory
-                              ? AppColors.accentBg
-                              : AppColors.chip,
-                          borderRadius: AppRadius.chipShape,
-                          border: Border.all(
-                            color: _groupByCategory
-                                ? AppColors.accent
-                                : Colors.transparent,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.category_outlined,
-                                size: 12,
-                                color: _groupByCategory
-                                    ? AppColors.accent
-                                    : AppColors.textTertiary),
-                            const SizedBox(width: 4),
-                            Text(
-                              '카테고리',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: _groupByCategory
-                                    ? AppColors.accent
-                                    : AppColors.textTertiary,
-                                fontFamily: AppText.fontFamily,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    // 더보기 이동 버튼
                     GestureDetector(
                       onTap: widget.onNavigateToMore,
                       behavior: HitTestBehavior.opaque,
@@ -189,29 +142,11 @@ class _GarageBodyState extends ConsumerState<_GarageBody> {
                 error: (_, _) => const SizedBox(),
                 data: (vehicles) => vehicles.isEmpty
                     ? const SizedBox()
-                    : _ItemStatusCard(
-                        vehicleId: vehicles.first.id,
-                        groupByCategory: _groupByCategory,
-                      ),
+                    : _ItemStatusCard(vehicleId: vehicles.first.id),
               ),
             ),
 
-            // 하단 노트
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screenPaddingH, 12, AppSpacing.screenPaddingH, 24),
-                child: Text(
-                  '※ 주행 습관이나 도로 사정에 따라 실제 교체 시기가 다를 수 있습니다.',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textTertiary,
-                    height: 1.6,
-                    fontFamily: AppText.fontFamily,
-                  ),
-                ),
-              ),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
             ),
             Positioned(
@@ -256,14 +191,6 @@ class _VehicleHero extends ConsumerWidget {
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          if (vehicle.trim != null) ...[
-            const SizedBox(height: 3),
-            Text(vehicle.trim!,
-                style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                    fontFamily: AppText.fontFamily)),
-          ],
           const SizedBox(height: 24),
           Text('총 주행거리',
               style: TextStyle(
@@ -336,11 +263,7 @@ class _VehicleHero extends ConsumerWidget {
 
 class _ItemStatusCard extends ConsumerWidget {
   final int vehicleId;
-  final bool groupByCategory;
-  const _ItemStatusCard({
-    required this.vehicleId,
-    this.groupByCategory = false,
-  });
+  const _ItemStatusCard({required this.vehicleId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -366,9 +289,49 @@ class _ItemStatusCard extends ConsumerWidget {
             child: Text('오류: $e',
                 style: const TextStyle(color: AppColors.textSecondary)),
           ),
-          data: (entries) => groupByCategory
-              ? _buildCategoryGroups(context, entries)
-              : _buildFlatList(context, entries),
+          data: (entries) {
+            final body = _buildFlatList(context, entries);
+            final allUnknown = entries.isNotEmpty &&
+                entries.every((e) => e.result.status == ItemStatus.unknown);
+            if (!allUnknown) return body;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.cardPaddingH, 16, AppSpacing.cardPaddingH, 0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentBg,
+                      borderRadius: AppRadius.badge,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.info_outline_rounded,
+                            size: 14, color: AppColors.accent),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            '+ 버튼을 눌러 최근 교체일을 입력하면 남은 수명이 자동 계산됩니다.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.accent,
+                              fontFamily: AppText.fontFamily,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                body,
+              ],
+            );
+          },
         ),
       ),
     );
@@ -393,60 +356,6 @@ class _ItemStatusCard extends ConsumerWidget {
         ],
       ],
     );
-  }
-
-  Widget _buildCategoryGroups(
-      BuildContext context, List<ItemStatusEntry> entries) {
-    // 카테고리 기준으로 그룹핑 (상태 순서는 유지)
-    final grouped = <String, List<ItemStatusEntry>>{};
-    for (final e in entries) {
-      grouped.putIfAbsent(e.spec.category, () => []).add(e);
-    }
-    final categories = grouped.keys.toList()..sort();
-
-    final children = <Widget>[];
-    for (var ci = 0; ci < categories.length; ci++) {
-      final cat = categories[ci];
-      final group = grouped[cat]!;
-
-      // 카테고리 헤더
-      children.add(Padding(
-        padding: EdgeInsets.fromLTRB(
-          AppSpacing.cardPaddingH,
-          ci == 0 ? 14 : 10,
-          AppSpacing.cardPaddingH,
-          6,
-        ),
-        child: Row(
-          children: [
-            Text(
-              cat,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textTertiary,
-                fontFamily: AppText.fontFamily,
-                letterSpacing: 0.02,
-              ),
-            ),
-          ],
-        ),
-      ));
-
-      for (final entry in group) {
-        children.add(_ItemStatusRow(
-          spec: entry.spec,
-          result: entry.result,
-          onTap: () => _pushDetail(context, entry.spec.id),
-          onQuickAdd: () => _pushDetailWithForm(context, entry.spec.id),
-        ));
-      }
-    }
-
-    // 마지막 카테고리 아래 여백
-    children.add(const SizedBox(height: 8));
-
-    return Column(children: children);
   }
 
   void _pushDetail(BuildContext context, int specId) {
@@ -501,23 +410,41 @@ class _ItemStatusRow extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 항목명 + 배지
+              // 항목명 + 부제 + 배지
               Expanded(
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(
-                      child: Text(spec.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textPrimary,
-                            fontFamily: AppText.fontFamily,
-                          )),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(spec.name,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textPrimary,
+                                fontFamily: AppText.fontFamily,
+                              )),
+                        ),
+                        if (showBadge) ...[
+                          const SizedBox(width: 8),
+                          _StatusBadge(result.status),
+                        ],
+                      ],
                     ),
-                    if (showBadge) ...[
-                      const SizedBox(width: 8),
-                      _StatusBadge(result.status),
+                    if (spec.subtitleKo != null &&
+                        spec.subtitleKo!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        spec.subtitleKo!,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textTertiary,
+                          fontFamily: AppText.fontFamily,
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -594,7 +521,16 @@ class _ItemStatusRow extends StatelessWidget {
       };
 
   String _remainText(RemainingLifeResult r) {
-    if (r.status == ItemStatus.unknown) return '이력 없음';
+    if (r.status == ItemStatus.unknown) {
+      if (spec.intervalKm != null && spec.intervalMonths != null) {
+        return '${fmtKm(spec.intervalKm!)}km · ${spec.intervalMonths}개월';
+      } else if (spec.intervalKm != null) {
+        return '${fmtKm(spec.intervalKm!)}km마다';
+      } else if (spec.intervalMonths != null) {
+        return '${spec.intervalMonths}개월마다';
+      }
+      return '이력 없음';
+    }
 
     if (r.isTimeDriven && r.remainingDays != null) {
       final d = r.remainingDays!;

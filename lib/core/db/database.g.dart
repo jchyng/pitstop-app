@@ -496,6 +496,15 @@ class $ItemSpecsTable extends ItemSpecs
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _subtitleKoMeta = const VerificationMeta('subtitleKo');
+  @override
+  late final GeneratedColumn<String> subtitleKo = GeneratedColumn<String>(
+    'subtitle_ko',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _categoryMeta = const VerificationMeta(
     'category',
   );
@@ -535,6 +544,24 @@ class $ItemSpecsTable extends ItemSpecs
   @override
   late final GeneratedColumn<int> severeIntervalKm = GeneratedColumn<int>(
     'severe_interval_km',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _urgencyThresholdKmMeta = const VerificationMeta('urgencyThresholdKm');
+  @override
+  late final GeneratedColumn<int> urgencyThresholdKm = GeneratedColumn<int>(
+    'urgency_threshold_km',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _urgencyThresholdDaysMeta = const VerificationMeta('urgencyThresholdDays');
+  @override
+  late final GeneratedColumn<int> urgencyThresholdDays = GeneratedColumn<int>(
+    'urgency_threshold_days',
     aliasedName,
     true,
     type: DriftSqlType.int,
@@ -603,10 +630,13 @@ class $ItemSpecsTable extends ItemSpecs
     vehicleId,
     key,
     name,
+    subtitleKo,
     category,
     intervalKm,
     intervalMonths,
     severeIntervalKm,
+    urgencyThresholdKm,
+    urgencyThresholdDays,
     note,
     behavior,
     lastReplacedOdometer,
@@ -714,6 +744,30 @@ class $ItemSpecsTable extends ItemSpecs
         ),
       );
     }
+    if (data.containsKey('subtitle_ko')) {
+      context.handle(
+        _subtitleKoMeta,
+        subtitleKo.isAcceptableOrUnknown(data['subtitle_ko']!, _subtitleKoMeta),
+      );
+    }
+    if (data.containsKey('urgency_threshold_km')) {
+      context.handle(
+        _urgencyThresholdKmMeta,
+        urgencyThresholdKm.isAcceptableOrUnknown(
+          data['urgency_threshold_km']!,
+          _urgencyThresholdKmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('urgency_threshold_days')) {
+      context.handle(
+        _urgencyThresholdDaysMeta,
+        urgencyThresholdDays.isAcceptableOrUnknown(
+          data['urgency_threshold_days']!,
+          _urgencyThresholdDaysMeta,
+        ),
+      );
+    }
     if (data.containsKey('is_hidden')) {
       context.handle(
         _isHiddenMeta,
@@ -745,6 +799,10 @@ class $ItemSpecsTable extends ItemSpecs
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      subtitleKo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}subtitle_ko'],
+      ),
       category: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}category'],
@@ -760,6 +818,14 @@ class $ItemSpecsTable extends ItemSpecs
       severeIntervalKm: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}severe_interval_km'],
+      ),
+      urgencyThresholdKm: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}urgency_threshold_km'],
+      ),
+      urgencyThresholdDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}urgency_threshold_days'],
       ),
       note: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -795,10 +861,13 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
   final int vehicleId;
   final String key;
   final String name;
+  final String? subtitleKo;
   final String category;
   final int? intervalKm;
   final int? intervalMonths;
   final int? severeIntervalKm;
+  final int? urgencyThresholdKm;
+  final int? urgencyThresholdDays;
   final String? note;
   final String? behavior;
   final int? lastReplacedOdometer;
@@ -809,10 +878,13 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
     required this.vehicleId,
     required this.key,
     required this.name,
+    this.subtitleKo,
     required this.category,
     this.intervalKm,
     this.intervalMonths,
     this.severeIntervalKm,
+    this.urgencyThresholdKm,
+    this.urgencyThresholdDays,
     this.note,
     this.behavior,
     this.lastReplacedOdometer,
@@ -826,6 +898,9 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
     map['vehicle_id'] = Variable<int>(vehicleId);
     map['key'] = Variable<String>(key);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || subtitleKo != null) {
+      map['subtitle_ko'] = Variable<String>(subtitleKo);
+    }
     map['category'] = Variable<String>(category);
     if (!nullToAbsent || intervalKm != null) {
       map['interval_km'] = Variable<int>(intervalKm);
@@ -835,6 +910,12 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
     }
     if (!nullToAbsent || severeIntervalKm != null) {
       map['severe_interval_km'] = Variable<int>(severeIntervalKm);
+    }
+    if (!nullToAbsent || urgencyThresholdKm != null) {
+      map['urgency_threshold_km'] = Variable<int>(urgencyThresholdKm);
+    }
+    if (!nullToAbsent || urgencyThresholdDays != null) {
+      map['urgency_threshold_days'] = Variable<int>(urgencyThresholdDays);
     }
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
@@ -858,6 +939,9 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
       vehicleId: Value(vehicleId),
       key: Value(key),
       name: Value(name),
+      subtitleKo: subtitleKo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subtitleKo),
       category: Value(category),
       intervalKm: intervalKm == null && nullToAbsent
           ? const Value.absent()
@@ -868,6 +952,12 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
       severeIntervalKm: severeIntervalKm == null && nullToAbsent
           ? const Value.absent()
           : Value(severeIntervalKm),
+      urgencyThresholdKm: urgencyThresholdKm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(urgencyThresholdKm),
+      urgencyThresholdDays: urgencyThresholdDays == null && nullToAbsent
+          ? const Value.absent()
+          : Value(urgencyThresholdDays),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       behavior: behavior == null && nullToAbsent
           ? const Value.absent()
@@ -892,10 +982,13 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
       vehicleId: serializer.fromJson<int>(json['vehicleId']),
       key: serializer.fromJson<String>(json['key']),
       name: serializer.fromJson<String>(json['name']),
+      subtitleKo: serializer.fromJson<String?>(json['subtitleKo']),
       category: serializer.fromJson<String>(json['category']),
       intervalKm: serializer.fromJson<int?>(json['intervalKm']),
       intervalMonths: serializer.fromJson<int?>(json['intervalMonths']),
       severeIntervalKm: serializer.fromJson<int?>(json['severeIntervalKm']),
+      urgencyThresholdKm: serializer.fromJson<int?>(json['urgencyThresholdKm']),
+      urgencyThresholdDays: serializer.fromJson<int?>(json['urgencyThresholdDays']),
       note: serializer.fromJson<String?>(json['note']),
       behavior: serializer.fromJson<String?>(json['behavior']),
       lastReplacedOdometer: serializer.fromJson<int?>(
@@ -915,10 +1008,13 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
       'vehicleId': serializer.toJson<int>(vehicleId),
       'key': serializer.toJson<String>(key),
       'name': serializer.toJson<String>(name),
+      'subtitleKo': serializer.toJson<String?>(subtitleKo),
       'category': serializer.toJson<String>(category),
       'intervalKm': serializer.toJson<int?>(intervalKm),
       'intervalMonths': serializer.toJson<int?>(intervalMonths),
       'severeIntervalKm': serializer.toJson<int?>(severeIntervalKm),
+      'urgencyThresholdKm': serializer.toJson<int?>(urgencyThresholdKm),
+      'urgencyThresholdDays': serializer.toJson<int?>(urgencyThresholdDays),
       'note': serializer.toJson<String?>(note),
       'behavior': serializer.toJson<String?>(behavior),
       'lastReplacedOdometer': serializer.toJson<int?>(lastReplacedOdometer),
@@ -932,10 +1028,13 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
     int? vehicleId,
     String? key,
     String? name,
+    Value<String?> subtitleKo = const Value.absent(),
     String? category,
     Value<int?> intervalKm = const Value.absent(),
     Value<int?> intervalMonths = const Value.absent(),
     Value<int?> severeIntervalKm = const Value.absent(),
+    Value<int?> urgencyThresholdKm = const Value.absent(),
+    Value<int?> urgencyThresholdDays = const Value.absent(),
     Value<String?> note = const Value.absent(),
     Value<String?> behavior = const Value.absent(),
     Value<int?> lastReplacedOdometer = const Value.absent(),
@@ -946,6 +1045,7 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
     vehicleId: vehicleId ?? this.vehicleId,
     key: key ?? this.key,
     name: name ?? this.name,
+    subtitleKo: subtitleKo.present ? subtitleKo.value : this.subtitleKo,
     category: category ?? this.category,
     intervalKm: intervalKm.present ? intervalKm.value : this.intervalKm,
     intervalMonths: intervalMonths.present
@@ -954,6 +1054,12 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
     severeIntervalKm: severeIntervalKm.present
         ? severeIntervalKm.value
         : this.severeIntervalKm,
+    urgencyThresholdKm: urgencyThresholdKm.present
+        ? urgencyThresholdKm.value
+        : this.urgencyThresholdKm,
+    urgencyThresholdDays: urgencyThresholdDays.present
+        ? urgencyThresholdDays.value
+        : this.urgencyThresholdDays,
     note: note.present ? note.value : this.note,
     behavior: behavior.present ? behavior.value : this.behavior,
     lastReplacedOdometer: lastReplacedOdometer.present
@@ -970,6 +1076,7 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
       vehicleId: data.vehicleId.present ? data.vehicleId.value : this.vehicleId,
       key: data.key.present ? data.key.value : this.key,
       name: data.name.present ? data.name.value : this.name,
+      subtitleKo: data.subtitleKo.present ? data.subtitleKo.value : this.subtitleKo,
       category: data.category.present ? data.category.value : this.category,
       intervalKm: data.intervalKm.present
           ? data.intervalKm.value
@@ -980,6 +1087,12 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
       severeIntervalKm: data.severeIntervalKm.present
           ? data.severeIntervalKm.value
           : this.severeIntervalKm,
+      urgencyThresholdKm: data.urgencyThresholdKm.present
+          ? data.urgencyThresholdKm.value
+          : this.urgencyThresholdKm,
+      urgencyThresholdDays: data.urgencyThresholdDays.present
+          ? data.urgencyThresholdDays.value
+          : this.urgencyThresholdDays,
       note: data.note.present ? data.note.value : this.note,
       behavior: data.behavior.present ? data.behavior.value : this.behavior,
       lastReplacedOdometer: data.lastReplacedOdometer.present
@@ -999,10 +1112,13 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
           ..write('vehicleId: $vehicleId, ')
           ..write('key: $key, ')
           ..write('name: $name, ')
+          ..write('subtitleKo: $subtitleKo, ')
           ..write('category: $category, ')
           ..write('intervalKm: $intervalKm, ')
           ..write('intervalMonths: $intervalMonths, ')
           ..write('severeIntervalKm: $severeIntervalKm, ')
+          ..write('urgencyThresholdKm: $urgencyThresholdKm, ')
+          ..write('urgencyThresholdDays: $urgencyThresholdDays, ')
           ..write('note: $note, ')
           ..write('behavior: $behavior, ')
           ..write('lastReplacedOdometer: $lastReplacedOdometer, ')
@@ -1013,21 +1129,24 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     vehicleId,
     key,
     name,
+    subtitleKo,
     category,
     intervalKm,
     intervalMonths,
     severeIntervalKm,
+    urgencyThresholdKm,
+    urgencyThresholdDays,
     note,
     behavior,
     lastReplacedOdometer,
     lastReplacedDate,
     isHidden,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1036,10 +1155,13 @@ class ItemSpec extends DataClass implements Insertable<ItemSpec> {
           other.vehicleId == this.vehicleId &&
           other.key == this.key &&
           other.name == this.name &&
+          other.subtitleKo == this.subtitleKo &&
           other.category == this.category &&
           other.intervalKm == this.intervalKm &&
           other.intervalMonths == this.intervalMonths &&
           other.severeIntervalKm == this.severeIntervalKm &&
+          other.urgencyThresholdKm == this.urgencyThresholdKm &&
+          other.urgencyThresholdDays == this.urgencyThresholdDays &&
           other.note == this.note &&
           other.behavior == this.behavior &&
           other.lastReplacedOdometer == this.lastReplacedOdometer &&
@@ -1052,10 +1174,13 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
   final Value<int> vehicleId;
   final Value<String> key;
   final Value<String> name;
+  final Value<String?> subtitleKo;
   final Value<String> category;
   final Value<int?> intervalKm;
   final Value<int?> intervalMonths;
   final Value<int?> severeIntervalKm;
+  final Value<int?> urgencyThresholdKm;
+  final Value<int?> urgencyThresholdDays;
   final Value<String?> note;
   final Value<String?> behavior;
   final Value<int?> lastReplacedOdometer;
@@ -1066,10 +1191,13 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
     this.vehicleId = const Value.absent(),
     this.key = const Value.absent(),
     this.name = const Value.absent(),
+    this.subtitleKo = const Value.absent(),
     this.category = const Value.absent(),
     this.intervalKm = const Value.absent(),
     this.intervalMonths = const Value.absent(),
     this.severeIntervalKm = const Value.absent(),
+    this.urgencyThresholdKm = const Value.absent(),
+    this.urgencyThresholdDays = const Value.absent(),
     this.note = const Value.absent(),
     this.behavior = const Value.absent(),
     this.lastReplacedOdometer = const Value.absent(),
@@ -1081,10 +1209,13 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
     required int vehicleId,
     required String key,
     required String name,
+    this.subtitleKo = const Value.absent(),
     required String category,
     this.intervalKm = const Value.absent(),
     this.intervalMonths = const Value.absent(),
     this.severeIntervalKm = const Value.absent(),
+    this.urgencyThresholdKm = const Value.absent(),
+    this.urgencyThresholdDays = const Value.absent(),
     this.note = const Value.absent(),
     this.behavior = const Value.absent(),
     this.lastReplacedOdometer = const Value.absent(),
@@ -1099,10 +1230,13 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
     Expression<int>? vehicleId,
     Expression<String>? key,
     Expression<String>? name,
+    Expression<String>? subtitleKo,
     Expression<String>? category,
     Expression<int>? intervalKm,
     Expression<int>? intervalMonths,
     Expression<int>? severeIntervalKm,
+    Expression<int>? urgencyThresholdKm,
+    Expression<int>? urgencyThresholdDays,
     Expression<String>? note,
     Expression<String>? behavior,
     Expression<int>? lastReplacedOdometer,
@@ -1114,10 +1248,13 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
       if (vehicleId != null) 'vehicle_id': vehicleId,
       if (key != null) 'key': key,
       if (name != null) 'name': name,
+      if (subtitleKo != null) 'subtitle_ko': subtitleKo,
       if (category != null) 'category': category,
       if (intervalKm != null) 'interval_km': intervalKm,
       if (intervalMonths != null) 'interval_months': intervalMonths,
       if (severeIntervalKm != null) 'severe_interval_km': severeIntervalKm,
+      if (urgencyThresholdKm != null) 'urgency_threshold_km': urgencyThresholdKm,
+      if (urgencyThresholdDays != null) 'urgency_threshold_days': urgencyThresholdDays,
       if (note != null) 'note': note,
       if (behavior != null) 'behavior': behavior,
       if (lastReplacedOdometer != null)
@@ -1132,10 +1269,13 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
     Value<int>? vehicleId,
     Value<String>? key,
     Value<String>? name,
+    Value<String?>? subtitleKo,
     Value<String>? category,
     Value<int?>? intervalKm,
     Value<int?>? intervalMonths,
     Value<int?>? severeIntervalKm,
+    Value<int?>? urgencyThresholdKm,
+    Value<int?>? urgencyThresholdDays,
     Value<String?>? note,
     Value<String?>? behavior,
     Value<int?>? lastReplacedOdometer,
@@ -1147,10 +1287,13 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
       vehicleId: vehicleId ?? this.vehicleId,
       key: key ?? this.key,
       name: name ?? this.name,
+      subtitleKo: subtitleKo ?? this.subtitleKo,
       category: category ?? this.category,
       intervalKm: intervalKm ?? this.intervalKm,
       intervalMonths: intervalMonths ?? this.intervalMonths,
       severeIntervalKm: severeIntervalKm ?? this.severeIntervalKm,
+      urgencyThresholdKm: urgencyThresholdKm ?? this.urgencyThresholdKm,
+      urgencyThresholdDays: urgencyThresholdDays ?? this.urgencyThresholdDays,
       note: note ?? this.note,
       behavior: behavior ?? this.behavior,
       lastReplacedOdometer: lastReplacedOdometer ?? this.lastReplacedOdometer,
@@ -1174,6 +1317,9 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (subtitleKo.present) {
+      map['subtitle_ko'] = Variable<String>(subtitleKo.value);
+    }
     if (category.present) {
       map['category'] = Variable<String>(category.value);
     }
@@ -1185,6 +1331,12 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
     }
     if (severeIntervalKm.present) {
       map['severe_interval_km'] = Variable<int>(severeIntervalKm.value);
+    }
+    if (urgencyThresholdKm.present) {
+      map['urgency_threshold_km'] = Variable<int>(urgencyThresholdKm.value);
+    }
+    if (urgencyThresholdDays.present) {
+      map['urgency_threshold_days'] = Variable<int>(urgencyThresholdDays.value);
     }
     if (note.present) {
       map['note'] = Variable<String>(note.value);
@@ -1211,10 +1363,13 @@ class ItemSpecsCompanion extends UpdateCompanion<ItemSpec> {
           ..write('vehicleId: $vehicleId, ')
           ..write('key: $key, ')
           ..write('name: $name, ')
+          ..write('subtitleKo: $subtitleKo, ')
           ..write('category: $category, ')
           ..write('intervalKm: $intervalKm, ')
           ..write('intervalMonths: $intervalMonths, ')
           ..write('severeIntervalKm: $severeIntervalKm, ')
+          ..write('urgencyThresholdKm: $urgencyThresholdKm, ')
+          ..write('urgencyThresholdDays: $urgencyThresholdDays, ')
           ..write('note: $note, ')
           ..write('behavior: $behavior, ')
           ..write('lastReplacedOdometer: $lastReplacedOdometer, ')
@@ -2988,10 +3143,13 @@ typedef $$ItemSpecsTableCreateCompanionBuilder =
       required int vehicleId,
       required String key,
       required String name,
+      Value<String?> subtitleKo,
       required String category,
       Value<int?> intervalKm,
       Value<int?> intervalMonths,
       Value<int?> severeIntervalKm,
+      Value<int?> urgencyThresholdKm,
+      Value<int?> urgencyThresholdDays,
       Value<String?> note,
       Value<String?> behavior,
       Value<int?> lastReplacedOdometer,
@@ -3004,10 +3162,13 @@ typedef $$ItemSpecsTableUpdateCompanionBuilder =
       Value<int> vehicleId,
       Value<String> key,
       Value<String> name,
+      Value<String?> subtitleKo,
       Value<String> category,
       Value<int?> intervalKm,
       Value<int?> intervalMonths,
       Value<int?> severeIntervalKm,
+      Value<int?> urgencyThresholdKm,
+      Value<int?> urgencyThresholdDays,
       Value<String?> note,
       Value<String?> behavior,
       Value<int?> lastReplacedOdometer,
@@ -3411,10 +3572,13 @@ class $$ItemSpecsTableTableManager
                 Value<int> vehicleId = const Value.absent(),
                 Value<String> key = const Value.absent(),
                 Value<String> name = const Value.absent(),
+                Value<String?> subtitleKo = const Value.absent(),
                 Value<String> category = const Value.absent(),
                 Value<int?> intervalKm = const Value.absent(),
                 Value<int?> intervalMonths = const Value.absent(),
                 Value<int?> severeIntervalKm = const Value.absent(),
+                Value<int?> urgencyThresholdKm = const Value.absent(),
+                Value<int?> urgencyThresholdDays = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<String?> behavior = const Value.absent(),
                 Value<int?> lastReplacedOdometer = const Value.absent(),
@@ -3425,10 +3589,13 @@ class $$ItemSpecsTableTableManager
                 vehicleId: vehicleId,
                 key: key,
                 name: name,
+                subtitleKo: subtitleKo,
                 category: category,
                 intervalKm: intervalKm,
                 intervalMonths: intervalMonths,
                 severeIntervalKm: severeIntervalKm,
+                urgencyThresholdKm: urgencyThresholdKm,
+                urgencyThresholdDays: urgencyThresholdDays,
                 note: note,
                 behavior: behavior,
                 lastReplacedOdometer: lastReplacedOdometer,
@@ -3441,10 +3608,13 @@ class $$ItemSpecsTableTableManager
                 required int vehicleId,
                 required String key,
                 required String name,
+                Value<String?> subtitleKo = const Value.absent(),
                 required String category,
                 Value<int?> intervalKm = const Value.absent(),
                 Value<int?> intervalMonths = const Value.absent(),
                 Value<int?> severeIntervalKm = const Value.absent(),
+                Value<int?> urgencyThresholdKm = const Value.absent(),
+                Value<int?> urgencyThresholdDays = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<String?> behavior = const Value.absent(),
                 Value<int?> lastReplacedOdometer = const Value.absent(),
@@ -3455,10 +3625,13 @@ class $$ItemSpecsTableTableManager
                 vehicleId: vehicleId,
                 key: key,
                 name: name,
+                subtitleKo: subtitleKo,
                 category: category,
                 intervalKm: intervalKm,
                 intervalMonths: intervalMonths,
                 severeIntervalKm: severeIntervalKm,
+                urgencyThresholdKm: urgencyThresholdKm,
+                urgencyThresholdDays: urgencyThresholdDays,
                 note: note,
                 behavior: behavior,
                 lastReplacedOdometer: lastReplacedOdometer,

@@ -123,10 +123,27 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(
-                      spec.name,
-                      style: AppText.sectionHeader,
-                      overflow: TextOverflow.ellipsis,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          spec.name,
+                          style: AppText.sectionHeader,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (spec.subtitleKo != null &&
+                            spec.subtitleKo!.isNotEmpty)
+                          Text(
+                            spec.subtitleKo!,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textTertiary,
+                              fontFamily: AppText.fontFamily,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -1251,7 +1268,6 @@ class _SpecInfoSheet extends StatelessWidget {
       if (spec.severeIntervalKm != null)
         ('가혹 조건 주기', '${fmtKm(spec.severeIntervalKm!)} km'),
       if (behaviorLabel != null) ('작업 유형', behaviorLabel),
-      ('카테고리', spec.category),
     ];
 
     return Container(

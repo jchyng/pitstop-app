@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'core/db/catalog_loader.dart';
 import 'core/db/database.dart';
 import 'core/services/local_notification_service.dart';
 import 'core/services/notification_service.dart';
@@ -15,7 +16,11 @@ AppDatabase appDatabase(Ref ref) => AppDatabase();
 
 @riverpod
 Future<void> appInit(Ref ref) async {
-  ref.watch(appDatabaseProvider);
+  final db = ref.watch(appDatabaseProvider);
+  final vehicles = await db.select(db.vehicles).get();
+  for (final vehicle in vehicles) {
+    await CatalogLoader.syncCatalogItems(db, vehicle);
+  }
 }
 
 @riverpod
@@ -98,7 +103,9 @@ Future<List<MaintenanceRecord>> maintenanceRecords(Ref ref, int specId) async {
   return db.getMaintenanceRecordsForSpec(specId);
 }
 
-/// 소모품 남은 수명 계산 결과, ratio 오름차순 정렬(unknown 맨 끝).
+/// 소모품 남은 수명 계산 결과.
+/// 정렬: overdue → warn → ok → unknown, 같은 상태 내에서는 ratio 오름차순(더 임박한 것 위),
+/// unknown 내에서는 intervalKm 오름차순.
 @riverpod
 Future<List<ItemStatusEntry>> sortedItemStatus(
     Ref ref, int vehicleId) async {
@@ -118,14 +125,31 @@ Future<List<ItemStatusEntry>> sortedItemStatus(
           ))
       .toList();
 
-  // overdue(ratio≈0) → warn → ok → unknown(ratio=null) 순
+  int statusOrder(ItemStatus s) => switch (s) {
+        ItemStatus.overdue => 0,
+        ItemStatus.warn => 1,
+        ItemStatus.ok => 2,
+        ItemStatus.unknown => 3,
+      };
+
+  const inf = 0x7fffffff;
   entries.sort((a, b) {
-    final aRatio = a.result.ratio;
-    final bRatio = b.result.ratio;
-    if (aRatio == null && bRatio == null) return 0;
-    if (aRatio == null) return 1;
-    if (bRatio == null) return -1;
-    return aRatio.compareTo(bRatio);
+    final sa = statusOrder(a.result.status);
+    final sb = statusOrder(b.result.status);
+    if (sa != sb) return sa.compareTo(sb);
+
+    if (a.result.status != ItemStatus.unknown) {
+      final ra = a.result.ratio ?? 1.0;
+      final rb = b.result.ratio ?? 1.0;
+      if (ra != rb) return ra.compareTo(rb);
+    }
+
+    final aKm = a.spec.intervalKm ?? inf;
+    final bKm = b.spec.intervalKm ?? inf;
+    if (aKm != bKm) return aKm.compareTo(bKm);
+    final aM = a.spec.intervalMonths ?? inf;
+    final bM = b.spec.intervalMonths ?? inf;
+    return aM.compareTo(bM);
   });
 
   return entries;

@@ -47,43 +47,13 @@ class _HistoryBody extends ConsumerStatefulWidget {
 }
 
 class _HistoryBodyState extends ConsumerState<_HistoryBody> {
-  String? _typeFilter;  // null = 전체
-  int? _specFilter;     // null = 전체
-  String? _specFilterName;
+  String? _typeFilter;
 
   List<RecordWithSpec> _applyFilters(List<RecordWithSpec> all) {
     return all.where((e) {
       if (_typeFilter != null && e.record.type != _typeFilter) return false;
-      if (_specFilter != null && e.record.itemSpecId != _specFilter) return false;
       return true;
     }).toList();
-  }
-
-  // 엔트리에서 고유 스펙 목록 추출
-  Map<int, String> _extractSpecs(List<RecordWithSpec> entries) {
-    final specs = <int, String>{};
-    for (final e in entries) {
-      if (e.spec != null) specs[e.spec!.id] = e.spec!.name;
-    }
-    return specs;
-  }
-
-  void _openSpecSheet(BuildContext context, Map<int, String> specs) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _SpecSelectorSheet(
-        specs: specs,
-        selectedId: _specFilter,
-        onSelect: (id, name) {
-          setState(() {
-            _specFilter = id;
-            _specFilterName = name;
-          });
-          Navigator.of(context).pop();
-        },
-      ),
-    );
   }
 
   @override
@@ -103,25 +73,9 @@ class _HistoryBodyState extends ConsumerState<_HistoryBody> {
 
         // ── 필터 영역 ──────────────────────────────────────────
         SliverToBoxAdapter(
-          child: recordsAsync.maybeWhen(
-            data: (entries) {
-              final specs = _extractSpecs(entries);
-              return _FilterBar(
-                typeFilter: _typeFilter,
-                specFilter: _specFilter,
-                specFilterName: _specFilterName,
-                hasSpecs: specs.isNotEmpty,
-                onTypeChanged: (t) => setState(() => _typeFilter = t),
-                onSpecTap: specs.isEmpty
-                    ? null
-                    : () => _openSpecSheet(context, specs),
-                onSpecClear: () => setState(() {
-                  _specFilter = null;
-                  _specFilterName = null;
-                }),
-              );
-            },
-            orElse: () => const SizedBox(height: 16),
+          child: _FilterBar(
+            typeFilter: _typeFilter,
+            onTypeChanged: (t) => setState(() => _typeFilter = t),
           ),
         ),
 
@@ -181,21 +135,11 @@ class _HistoryBodyState extends ConsumerState<_HistoryBody> {
 
 class _FilterBar extends StatelessWidget {
   final String? typeFilter;
-  final int? specFilter;
-  final String? specFilterName;
-  final bool hasSpecs;
   final ValueChanged<String?> onTypeChanged;
-  final VoidCallback? onSpecTap;
-  final VoidCallback onSpecClear;
 
   const _FilterBar({
     required this.typeFilter,
-    required this.specFilter,
-    required this.specFilterName,
-    required this.hasSpecs,
     required this.onTypeChanged,
-    required this.onSpecTap,
-    required this.onSpecClear,
   });
 
   @override
@@ -240,19 +184,6 @@ class _FilterBar extends StatelessWidget {
                   onTap: () => onTypeChanged(
                       typeFilter == 'refill' ? null : 'refill'),
                 ),
-                // 소모품 필터
-                if (hasSpecs) ...[
-                  const SizedBox(width: 12),
-                  Container(width: 1, height: 20, color: AppColors.hairline),
-                  const SizedBox(width: 12),
-                  if (specFilter != null)
-                    _SpecActiveChip(
-                      name: specFilterName ?? '',
-                      onClear: onSpecClear,
-                    )
-                  else
-                    _SpecPickerChip(onTap: onSpecTap),
-                ],
               ],
             ),
           ),
@@ -312,209 +243,6 @@ class _TypeChip extends StatelessWidget {
                 fontFamily: AppText.fontFamily,
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SpecPickerChip extends StatelessWidget {
-  final VoidCallback? onTap;
-  const _SpecPickerChip({this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: AppRadius.chipShape,
-          border: Border.all(color: AppColors.hairline),
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.tune_rounded, size: 14, color: AppColors.textTertiary),
-            SizedBox(width: 6),
-            Text(
-              '소모품',
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-                fontFamily: AppText.fontFamily,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SpecActiveChip extends StatelessWidget {
-  final String name;
-  final VoidCallback onClear;
-  const _SpecActiveChip({required this.name, required this.onClear});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.accentBg,
-        borderRadius: AppRadius.chipShape,
-        border: Border.all(color: AppColors.accent),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 120),
-            child: Text(
-              name,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.accent,
-                fontFamily: AppText.fontFamily,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: 6),
-          GestureDetector(
-            onTap: onClear,
-            child: const Icon(Icons.close_rounded,
-                size: 14, color: AppColors.accent),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── 소모품 선택 바텀시트 ─────────────────────────────────────
-
-class _SpecSelectorSheet extends StatelessWidget {
-  final Map<int, String> specs;
-  final int? selectedId;
-  final void Function(int? id, String? name) onSelect;
-
-  const _SpecSelectorSheet({
-    required this.specs,
-    required this.selectedId,
-    required this.onSelect,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final entries = specs.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface2,
-        borderRadius: AppRadius.bottomSheet,
-      ),
-      padding: const EdgeInsets.fromLTRB(0, 14, 0, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 그래버
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha(40),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screenPaddingH, 0, AppSpacing.screenPaddingH, 12),
-            child: const Text('소모품 선택',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
-                  fontFamily: AppText.fontFamily,
-                )),
-          ),
-          // 전체 옵션
-          _SpecRow(
-            name: '전체',
-            selected: selectedId == null,
-            onTap: () => onSelect(null, null),
-          ),
-          const Divider(
-              height: 1,
-              indent: AppSpacing.screenPaddingH,
-              color: AppColors.hairline),
-          // 개별 스펙
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(context).height * 0.45,
-            ),
-            child: ListView.separated(
-              shrinkWrap: true,
-              itemCount: entries.length,
-              separatorBuilder: (_, _) => const Divider(
-                  height: 1,
-                  indent: AppSpacing.screenPaddingH,
-                  color: AppColors.hairline),
-              itemBuilder: (_, i) => _SpecRow(
-                name: entries[i].value,
-                selected: selectedId == entries[i].key,
-                onTap: () => onSelect(entries[i].key, entries[i].value),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SpecRow extends StatelessWidget {
-  final String name;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _SpecRow(
-      {required this.name, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.screenPaddingH, vertical: 15),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                name,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight:
-                      selected ? FontWeight.w500 : FontWeight.w400,
-                  color: selected
-                      ? AppColors.accent
-                      : AppColors.textPrimary,
-                  fontFamily: AppText.fontFamily,
-                ),
-              ),
-            ),
-            if (selected)
-              const Icon(Icons.check_rounded,
-                  size: 18, color: AppColors.accent),
           ],
         ),
       ),

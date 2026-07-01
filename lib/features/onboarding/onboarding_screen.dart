@@ -17,7 +17,6 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   List<CatalogInfo>? _catalogs;
   String? _selectedPath;
-  final _nicknameCtrl = TextEditingController();
   final _odometerCtrl = TextEditingController();
   bool _catalogLoading = true;
   bool _saving = false;
@@ -30,7 +29,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   void dispose() {
-    _nicknameCtrl.dispose();
     _odometerCtrl.dispose();
     super.dispose();
   }
@@ -50,11 +48,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _snack('차량을 선택해주세요');
       return;
     }
-    final nickname = _nicknameCtrl.text.trim();
-    if (nickname.isEmpty) {
-      _snack('차량 별칭을 입력해주세요');
-      return;
-    }
     final odomText = _odometerCtrl.text.trim().replaceAll(',', '');
     final odometer = int.tryParse(odomText);
     if (odometer == null || odometer < 0) {
@@ -68,7 +61,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       await CatalogLoader.seedFromCatalog(
         db,
         assetPath: _selectedPath!,
-        nickname: nickname,
         odometer: odometer,
       );
       ref.invalidate(vehiclesProvider);
@@ -268,23 +260,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
               const SizedBox(height: 32),
 
-              // ── 차량 정보 ────────────────────────────────────────
-              _SectionLabel('차량 정보'),
+              // ── 현재 주행거리 ─────────────────────────────────────
+              _SectionLabel('현재 주행거리'),
               const SizedBox(height: 10),
-
-              _FieldLabel('차량 별칭'),
-              const SizedBox(height: 8),
-              _InputBox(
-                controller: _nicknameCtrl,
-                hint: _selectedPath != null && _catalogs != null
-                    ? '예: 내 ${_catalogs!.firstWhere((c) => c.assetPath == _selectedPath).nameKo.split(' ').first}'
-                    : '예: 내 차',
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: 14),
-
-              _FieldLabel('현재 주행거리 (km)'),
-              const SizedBox(height: 8),
               _InputBox(
                 controller: _odometerCtrl,
                 hint: '예: 44,500',

@@ -21,10 +21,13 @@ class ItemSpecs extends Table {
   IntColumn get vehicleId => integer().references(Vehicles, #id)();
   TextColumn get key => text()(); // 안정적 식별자 (예: "engine-oil")
   TextColumn get name => text()(); // 표시명 (예: "엔진오일")
+  TextColumn get subtitleKo => text().nullable()(); // 부제 (예: "오일필터 포함")
   TextColumn get category => text()();
   IntColumn get intervalKm => integer().nullable()();
   IntColumn get intervalMonths => integer().nullable()();
   IntColumn get severeIntervalKm => integer().nullable()();
+  IntColumn get urgencyThresholdKm => integer().nullable()(); // 경고 임박 기준 km
+  IntColumn get urgencyThresholdDays => integer().nullable()(); // 경고 임박 기준 일수
   TextColumn get note => text().nullable()();
   TextColumn get behavior => text().nullable()(); // replace_only / inspect_only / both
   IntColumn get lastReplacedOdometer => integer().nullable()();
@@ -71,13 +74,18 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
       if (from < 2) {
         await m.addColumn(itemSpecs, itemSpecs.isHidden);
+      }
+      if (from < 3) {
+        await m.addColumn(itemSpecs, itemSpecs.subtitleKo);
+        await m.addColumn(itemSpecs, itemSpecs.urgencyThresholdKm);
+        await m.addColumn(itemSpecs, itemSpecs.urgencyThresholdDays);
       }
     },
   );
@@ -157,6 +165,29 @@ class AppDatabase extends _$AppDatabase {
   Future<void> toggleSpecHidden(int specId, {required bool hidden}) async {
     await (update(itemSpecs)..where((s) => s.id.equals(specId)))
         .write(ItemSpecsCompanion(isHidden: Value(hidden)));
+  }
+
+  Future<void> syncCatalogSpec(
+    int specId, {
+    required int? intervalKm,
+    required int? intervalMonths,
+    required String category,
+    required String? behavior,
+    required String? subtitleKo,
+    required int? urgencyThresholdKm,
+    required int? urgencyThresholdDays,
+  }) async {
+    await (update(itemSpecs)..where((s) => s.id.equals(specId))).write(
+      ItemSpecsCompanion(
+        intervalKm: Value(intervalKm),
+        intervalMonths: Value(intervalMonths),
+        category: Value(category),
+        behavior: Value(behavior),
+        subtitleKo: Value(subtitleKo),
+        urgencyThresholdKm: Value(urgencyThresholdKm),
+        urgencyThresholdDays: Value(urgencyThresholdDays),
+      ),
+    );
   }
 
   Future<void> updateItemSpec(

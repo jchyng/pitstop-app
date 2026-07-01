@@ -80,11 +80,15 @@ RemainingLifeResult calculateRemainingLife(
     ratio = ratioTime!;
   }
 
+  final warnKm = spec.urgencyThresholdKm ?? AppThresholds.warnRemainingKm;
+  final warnDays = spec.urgencyThresholdDays;
+
   final ItemStatus status;
   if (ratio <= 0) {
     status = ItemStatus.overdue;
   } else if (ratio <= AppThresholds.warnRatio ||
-      (remKm != null && remKm <= AppThresholds.warnRemainingKm)) {
+      (remKm != null && remKm <= warnKm) ||
+      (warnDays != null && remDays != null && remDays <= warnDays)) {
     status = ItemStatus.warn;
   } else {
     status = ItemStatus.ok;
